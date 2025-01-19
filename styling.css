@@ -33,7 +33,7 @@ body{
 
 .text-container{
     padding-top: 10px;
-    padding-left: 10px;
+    padding-left: auto;
     margin:0;
     background-color: blue;
     font-size:24px;
@@ -42,8 +42,8 @@ body{
     line-height: 1.6;
 }
 
-#dynamic-bg {
-    position: absolute;
+#dynamic-bg{
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
