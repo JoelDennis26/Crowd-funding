@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="styling.css"/>
 </head>
 <body>
+    <div id="dynamic-bg"></div>
     <div class="navbar">
         <svg width="200" height="140" viewBox="0 0 200 140">
             <ellipse cx="100" cy="70" rx="85" ry="55"></ellipse>
@@ -16,5 +17,22 @@
         <a href="#">Log in</a>
         <a href="#">Donate</a>
     </div>
+    <div class="text-container">
+        Welcome to our crowd-funding platform.
+    </div>
+
+    <script>
+        const images=[
+            'background-1.png',
+            'background-2.png',
+            'background-3.png',
+            'background-4.png',
+            'background-5.png',
+        ];
+
+        const randomimage = images[Math.floor(Math.random()*images.length)];
+
+        document.getElementById('dynamic-bg').style.backgroundImage=`url('${randomimage}')`;
+    </script>
 </body>
 </html>
