@@ -4,35 +4,68 @@
     <meta charset="UTF-8">
     <title>crowd-funding</title>
     <link rel="stylesheet" href="styling.css"/>
+    <link rel="icon" href="logo.png"/>
 </head>
 <body>
-<div class="navbar">
-    <svg width="200" height="140" viewBox="0 0 200 140">
-        <ellipse cx="100" cy="70" rx="85" ry="55"/>
-        <text x="100" y="75">CF</text>
-    </svg>
-    <a href="#">Home</a>
-    <a href="#">Contact us</a>
-    <a href="#">Log in</a>
-    <a href="#">Donate</a>
-</div>
-<div id="dynamic-bg"></div>
-    <div class="text-container">
-        Welcome to our crowd-funding platform.
+<header>
+    <div class="navbar">
+        <img src="logo.png"/>
+        <a href="#">Home</a>
+        <div class="dropdown">
+            <a href="#">Contact us</a>
+            <div class="dropdown-content">
+                <a href="#">Email</a>
+                <a href="#">Phone</a>
+                <a href="#">Social Media</a>
+            </div>
+        </div>
+        <a href="#">Log in</a>
+        <a href="#">Donate</a>
+        <div class="dropdown">
+            <a href="#">Fundraise</a>
+            <div class="dropdown-content">
+                <a href="#">Yourself</a>
+                <a href="#">Frinds and Family</a>
+                <a href="#">Charity</a>
+            </div>
+        </div>
+       
     </div>
+</header>
+<div id="dynamic-bg"></div>
+<div class="text-container">
+    Welcome to our crowd-funding platform.
+</div>
+<div class="image-display">
+    <img src="webpage-image.png"/>
+</div>
+    
+<script>
+    const images=[
+        'background-image.png',
+    ];
+    const randomimage = images[Math.floor(Math.random()*images.length)];
 
-    <script>
-        const images=[
-            'background-1.png',
-            'background-2.png',
-            'background-3.png',
-            'background-4.png',
-            'background-5.png',
-        ];
+    document.getElementById('dynamic-bg').style.backgroundImage=`url('${randomimage}')`;
+    window.onscroll = function(){
+        let scroll = window.scrollY;
+        let image = document.querySelector('.image-display img');
+        let text = document.querySelector('.text-container');
 
-        const randomimage = images[Math.floor(Math.random()*images.length)];
+        let imageo = 1 - scroll/500;
+        if(imageo<0) imageo = 0;
+        image.style.opacity = imageo;
 
-        document.getElementById('dynamic-bg').style.backgroundImage=`url('${randomimage}')`;
-    </script>
+        let texto = scroll/500;
+        if(texto>1) texto = 1;
+        text.style.opacity = texto;
+    };
+</script>
+<div class="text-container">
+    Join our community and support causes that matter. Fundraising has never been easier or more impactful. Start your journey with us today!
+</div>
+<footer>
+    <p>&copy;Made by developers with love.</p>
+</footer>
 </body>
 </html>

@@ -12,11 +12,18 @@ body{
     background-color: rgb(102, 9, 189);
     width: 100%;
     height: auto;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .navbar a{
     text-decoration: none;
     padding: 0px 10px;
+    color: white;
+
+}
+
+.navbar a:hover{
+    color: red;
 }
 
 .navbar svg text{
@@ -25,8 +32,9 @@ body{
     text-anchor: middle;
 }
 
-.navbar svg{
-    order: -1;
+.navbar img{
+    width: 10%;
+    height: 10%;
     margin-right: auto;
 }
 
@@ -40,6 +48,9 @@ body{
     padding-bottom: 10px;
     line-height: 1.6;
     width: 100%;
+    align-items: center;
+    display:flex;
+    flex-direction: column;
 }
 
 #dynamic-bg{
@@ -51,4 +62,53 @@ body{
     background-size: cover;
     background-position: center;
     z-index: -1;
+}
+
+footer{
+    text-align: center;
+    margin-top: 3rem;
+    padding: 1rem 0;
+    background: black;
+    color: #888;
+}
+
+footer a {
+    color: #2575fc;
+    text-decoration: none;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}
+
+.dropdown{
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content{
+    background-color: white;
+    display: none;
+    position: absolute;
+    min-width: 150px;
+    box-shadow: 0px 8px 16px rgb(102, 9, 189);
+    z-index: 1;
+}
+
+.dropdown-content a{
+    color: black;
+    padding: 12px 16px;
+    display: block;
+}
+
+.dropdown-content a:hover{
+    background-color: #aaa;
+}
+
+.dropdown:hover .dropdown-content{
+    display: block;
+}
+
+.image-display img{
+    width:100%;
 }
