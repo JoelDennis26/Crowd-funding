@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Crowd-Funding</title>
+    <style>
+        /* Basic modal styling */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .close {
+            cursor: pointer;
+            font-size: 20px;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="navbar">
+            <a href="#" id="login-btn">Log in</a>
+        </div>
+    </header>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Log In</h2>
+            <form>
+                <input type="email" placeholder="Email" required><br><br>
+                <input type="password" placeholder="Password" required><br><br>
+                <button type="submit">Log In</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const loginBtn = document.getElementById('login-btn');
+            const modal = document.getElementById('login-modal');
+            const closeModal = document.querySelector('.close');
+
+            if (!loginBtn || !modal || !closeModal) {
+                console.error("One or more elements are missing in the DOM.");
+                return;
+            }
+
+            // Show modal
+            loginBtn.onclick = function (event) {
+                event.preventDefault(); // Prevent default anchor behavior
+                modal.style.display = 'flex';
+                console.log("Modal opened.");
+            };
+
+            // Close modal
+            closeModal.onclick = function () {
+                modal.style.display = 'none';
+                console.log("Modal closed.");
+            };
+
+            // Close modal on clicking outside
+            window.onclick = function (event) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                    console.log("Modal closed by clicking outside.");
+                }
+            };
+        });
+    </script>
+</body>
+</html>

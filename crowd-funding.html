@@ -19,15 +19,15 @@
                 <a href="#">Social Media</a>
             </div>
         </div>
-        <a href="#">Log in</a>
+        <a href="#" id="login-btn">Log in</a>
         <a href="#">Donate</a>
         <div class="dropdown">
             <a href="#">Fundraise</a>
             <div class="dropdown-content">
                 <a href="#">Yourself</a>
-                <a href="#">Frinds and Family</a>
+                <a href="#">Friends and Family</a>
                 <a href="#">Charity</a>
-                <a href="#">Starup</a>
+                <a href="#">Startup</a>
             </div>
         </div>
        
@@ -39,6 +39,18 @@
 </div>
 <div class="image-display">
     <img src="webpage-image.png"/>
+</div>
+
+<div id="login-modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Log In</h2>
+        <form>
+            <input type="email" placeholder="Email" required><br><br>
+            <input type="password" placeholder="Password" required><br><br>
+            <button type="submit">Log In</button>
+        </form>
+    </div>
 </div>
     
 <script>
@@ -61,12 +73,44 @@
         if(texto>1) texto = 1;
         text.style.opacity = texto;
     };
+
+    document.addEventListener("DOMContentLoaded", () => {
+            const loginBtn = document.getElementById('login-btn');
+            const modal = document.getElementById('login-modal');
+            const closeModal = document.querySelector('.close');
+
+            if (!loginBtn || !modal || !closeModal) {
+                console.error("One or more elements are missing in the DOM.");
+                return;
+            }
+
+            // Show modal
+            loginBtn.onclick = function (event) {
+                event.preventDefault(); // Prevent default anchor behavior
+                modal.style.display = 'flex';
+                console.log("Modal opened.");
+            };
+
+            // Close modal
+            closeModal.onclick = function () {
+                modal.style.display = 'none';
+                console.log("Modal closed.");
+            };
+
+            // Close modal on clicking outside
+            window.onclick = function (event) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                    console.log("Modal closed by clicking outside.");
+                }
+            };
+        });
 </script>
 <div class="text-container">
     Join our community and support causes that matter. Fundraising has never been easier or more impactful. Start your journey with us today!
 </div>
 <footer>
-    <p>&copy;Made by developers with love.</p>
+    <p>&copy;2025 Made by developers with love.</p>
 </footer>
 </body>
 </html>
