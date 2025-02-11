@@ -109,6 +109,13 @@ footer a:hover {
     display: block;
 }
 
+.image-display{
+    position: relative;
+    width: 100%;
+    height: auto;
+    overflow: hidden;
+}
+
 .image-display img{
     width:100%;
 }
@@ -172,4 +179,219 @@ footer a:hover {
 .close:focus {
     color: black;
     text-decoration: none;
+}
+
+.text-container-about{
+    padding-top: 10px;
+    padding-left: auto;
+    margin:0;
+    background-color: blue;
+    font-size:24px;
+    color:white;
+    padding-bottom: 10px;
+    line-height: 1.6;
+    width: 100%;
+    align-items: center;
+    display:flex;
+    flex-direction: column;
+    padding-left:100px;
+    flex-wrap:wrap;
+    max-width: 94%;
+}
+
+.text-container-image{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-right: 180px;
+    margin-left: auto;
+    height: auto;
+    width: auto;
+}
+
+/* .text-container-image img{
+    width: 30%;
+    height: auto;
+    border: 2px solid #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-left: auto;
+} */
+
+.left-images,
+.right-images {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-70%);
+    display: flex;
+    flex-direction: column;
+    gap:20px;
+}
+
+.left-images {
+    left: 10px;
+}
+
+.right-images {
+    right: 10px;
+}
+
+.left-images img,
+.right-images img {
+    width: 100%;
+    /* max-width: 400px; */
+    height: 50%;
+    border: 2px solid #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+}
+
+.image-container {
+    border: 2px solid #fff;
+    border-radius: 10px;
+    padding: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: #f9f9f9;
+    text-align: center;
+}
+
+.image-container img {
+    width: 450px;
+    height: auto;
+    display: block;
+    margin: auto;
+}
+
+.heading{
+    font-size: 30px;
+    align-items: center;
+}
+
+.info{
+    font-size: 40px;
+    font-family: cursive;
+    line-height: 1.6;
+}
+
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.85); /* Increased opacity to block background visibility */
+    justify-content: center;
+    align-items: center;
+}
+
+
+.modal-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    animation: fadeIn 0.3s;
+}
+
+.modal-content h2 {
+    margin: 0 0 20px 0;
+}
+
+.modal-content form {
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-content label {
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.modal-content textarea,
+.modal-content input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.modal-content button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.modal-content button:hover {
+    background-color: #45a049;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: black;
+    text-decoration: none;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+#donation-list {
+    margin: 20px auto;
+    padding: 20px;
+    width: 90%;
+    max-width: 600px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#donation-list h3 {
+    margin-bottom: 10px;
+    font-size: 20px;
+    color: #333;
+}
+
+#donation-records {
+    list-style-type: none;
+    padding: 0;
+}
+
+#donation-records li {
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }

@@ -2,89 +2,197 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Crowd-Funding</title>
-    <style>
-        /* Basic modal styling */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.4);
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        .close {
-            cursor: pointer;
-            font-size: 20px;
-            position: absolute;
-            top: 10px;
-            right: 20px;
-        }
-    </style>
+    <title>Crowd-funding</title>
+    <link rel="stylesheet" href="styling.css"/>
+    <link rel="icon" href="logo.png"/>
 </head>
 <body>
-    <header>
-        <div class="navbar">
-            <a href="#" id="login-btn">Log in</a>
+<header>
+    <div class="navbar">
+        <img src="logo.png" alt="Logo"/>
+        <a href="#">Home</a>
+        <div class="dropdown">
+            <a href="#">Contact us</a>
+            <div class="dropdown-content">
+                <a href="#">Email</a>
+                <a href="#">Phone</a>
+                <a href="#">Social Media</a>
+            </div>
         </div>
-    </header>
-
-    <!-- Login Modal -->
-    <div id="login-modal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Log In</h2>
-            <form>
-                <input type="email" placeholder="Email" required><br><br>
-                <input type="password" placeholder="Password" required><br><br>
-                <button type="submit">Log In</button>
-            </form>
+        <a href="#" id="login-btn">Log in</a>
+        <a href="#" id="donate-btn">Donate</a>
+        <div class="dropdown">
+            <a href="#">Fundraise</a>
+            <div class="dropdown-content">
+                <a href="#">Yourself</a>
+                <a href="#">Friends and Family</a>
+                <a href="#">Charity</a>
+                <a href="#">Startup</a>
+            </div>
         </div>
     </div>
+</header>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const loginBtn = document.getElementById('login-btn');
-            const modal = document.getElementById('login-modal');
-            const closeModal = document.querySelector('.close');
+<div id="dynamic-bg"></div>
+<div class="text-container">
+    Welcome to our crowd-funding platform.
+</div>
 
-            if (!loginBtn || !modal || !closeModal) {
-                console.error("One or more elements are missing in the DOM.");
-                return;
+<!-- Donate Modal -->
+<div id="donate-modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Donate to a Cause</h2>
+        <form id="donate-form">
+            <label for="reason">Reason for Fundraising:</label><br>
+            <textarea id="reason" name="reason" rows="4" placeholder="Enter your reason..." required></textarea><br><br>
+
+            <label for="story">Your Story:</label><br>
+            <textarea id="story" name="story" rows="6" placeholder="Share your story..." required></textarea><br><br>
+
+            <label for="amount">Donation Amount:</label><br>
+            <input type="number" id="amount" name="amount" min="1" placeholder="Enter amount in USD" required/><br><br>
+
+            <button type="submit" id="donate-submit">Submit Donation</button>
+        </form>
+    </div>
+</div>
+
+<footer>
+    <p>Email: crowd-funding@cfall.com</p>
+    <p>Phone: 9347201872</p>
+    <p>Social Media:</p>
+    <p>&copy;2025 Made by developers with love.</p>
+</footer>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const donateBtn = document.getElementById('donate-btn');
+        const donateModal = document.getElementById('donate-modal');
+        const closeModal = document.querySelector('.close');
+        const donateForm = document.getElementById('donate-form');
+
+        // Show the Donate Modal
+        donateBtn.onclick = function (event) {
+            event.preventDefault();
+            donateModal.style.display = 'flex';
+        };
+
+        // Close Modal
+        closeModal.onclick = function () {
+            donateModal.style.display = 'none';
+        };
+
+        // Close Modal when clicking outside
+        window.onclick = function (event) {
+            if (event.target === donateModal) {
+                donateModal.style.display = 'none';
             }
+        };
 
-            // Show modal
-            loginBtn.onclick = function (event) {
-                event.preventDefault(); // Prevent default anchor behavior
-                modal.style.display = 'flex';
-                console.log("Modal opened.");
-            };
+        // Handle Form Submission
+        donateForm.onsubmit = function (event) {
+            event.preventDefault();
 
-            // Close modal
-            closeModal.onclick = function () {
-                modal.style.display = 'none';
-                console.log("Modal closed.");
-            };
+            const reason = document.getElementById('reason').value;
+            const story = document.getElementById('story').value;
+            const amount = document.getElementById('amount').value;
 
-            // Close modal on clicking outside
-            window.onclick = function (event) {
-                if (event.target === modal) {
-                    modal.style.display = 'none';
-                    console.log("Modal closed by clicking outside.");
-                }
-            };
-        });
-    </script>
+            if (reason && story && amount) {
+                alert(`Donation Submitted!\n\nReason: ${reason}\nStory: ${story}\nAmount: $${amount}`);
+                donateModal.style.display = 'none';
+                donateForm.reset();
+            } else {
+                alert("Please fill out all fields.");
+            }
+        };
+    });
+</script>
+
+<style>
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: center;
+    }
+
+    .modal-content {
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        animation: fadeIn 0.3s;
+    }
+
+    .modal-content h2 {
+        margin: 0 0 20px 0;
+    }
+
+    .modal-content form {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-content label {
+        font-weight: bold;
+        margin-bottom: 8px;
+    }
+
+    .modal-content textarea,
+    .modal-content input {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 16px;
+    }
+
+    .modal-content button {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 10px;
+        cursor: pointer;
+        border-radius: 4px;
+        font-size: 16px;
+    }
+
+    .modal-content button:hover {
+        background-color: #45a049;
+    }
+
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .close:hover {
+        color: black;
+        text-decoration: none;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+</style>
 </body>
 </html>
