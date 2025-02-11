@@ -120,7 +120,7 @@ footer a:hover {
     width:100%;
 }
 
-.modal {
+/* .modal {
     display: none;
     position: fixed;
     top: 0;
@@ -130,8 +130,8 @@ footer a:hover {
     background-color: rgba(0, 0, 0, 0.4);
     justify-content: center;
     align-items: center;
-}
-.modal-content{
+} */
+/* .modal-content{
     background-color: #fefefe;
     margin: auto;
     padding: 20px;
@@ -179,7 +179,7 @@ footer a:hover {
 .close:focus {
     color: black;
     text-decoration: none;
-}
+} */
 
 .text-container-about{
     padding-top: 10px;
@@ -214,15 +214,6 @@ footer a:hover {
     height: auto;
     width: auto;
 }
-
-/* .text-container-image img{
-    width: 30%;
-    height: auto;
-    border: 2px solid #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    margin-left: auto;
-} */
 
 .left-images,
 .right-images {
