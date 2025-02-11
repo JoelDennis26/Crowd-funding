@@ -21,14 +21,7 @@
         </div>
         <a href="#" id="login-btn">Log in</a>
         <a href="#" id="donate-btn">Donate</a>
-        <div class="dropdown">
-            <a href="#">Fundraise</a>
-            <div class="dropdown-content">
-                <a href="#">Yourself</a>
-                <a href="#">Friends and Family</a>
-                <a href="#">Charity</a>
-                <a href="#">Startup</a>
-            </div>
+        <a href="#" id="fundraise-btn">Fundraise</a>
         </div>
        
     </div>
@@ -53,6 +46,31 @@
             <input type="number" id="amount" name="amount" min="1" placeholder="Enter amount in USD" required/><br><br>
 
             <button type="submit" id="donate-submit">Submit Donation</button>
+        </form>
+    </div>
+</div>
+
+<div id="fundraise-modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Start a Fundraiser</h2>
+        <form id="fundraise-form">
+            <label for="fundraise-option">Select an Option:</label><br>
+            <select id="fundraise-option" name="fundraise-option" required>
+                <option value="">Choose an option</option>
+                <option value="Yourself">Yourself</option>
+                <option value="Friends and Family">Friends and Family</option>
+                <option value="Charity">Charity</option>
+                <option value="Startup">Startup</option>
+            </select><br><br>
+
+            <label for="fundraise-reason">Reason for Fundraising:</label><br>
+            <textarea id="fundraise-reason" name="fundraise-reason" rows="4" placeholder="Enter your reason..." required></textarea><br><br>
+
+            <label for="fundraise-story">Your Story:</label><br>
+            <textarea id="fundraise-story" name="fundraise-story" rows="6" placeholder="Share your story..." required></textarea><br><br>
+
+            <button type="submit" id="fundraise-submit">Submit Fundraiser</button>
         </form>
     </div>
 </div>
@@ -168,6 +186,34 @@
                 donateModal.style.display = "none";
 
                 alert("Thank you for your donation!");
+            } else {
+                alert("Please fill out all fields.");
+            }
+        };
+
+        // fundraise
+
+        const fundraiseBtn =  document.getElementById("fundraise-btn");
+        const fundraiseModal = document.getElementById("fundraise-modal");
+        const fundraiseForm = document.getElementById("fundraise-form");
+
+        fundraiseBtn.onclick = (event) => {
+            event.preventDefault();
+            fundraiseModal.style.display = "flex";
+        };
+
+        fundraiseForm.onsubmit = (event) => {
+            event.preventDefault();
+            const option = document.getElementById("fundraise-option").value;
+            const reason = document.getElementById("fundraise-reason").value;
+            const story = document.getElementById("fundraise-story").value;
+
+            if (option && reason && story) {
+                alert(
+                    `Fundraiser Submitted!\n\nOption: ${option}\nReason: ${reason}\nStory: ${story}`
+                );
+                fundraiseForm.reset();
+                fundraiseModal.style.display = "none";
             } else {
                 alert("Please fill out all fields.");
             }
