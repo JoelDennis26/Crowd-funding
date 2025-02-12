@@ -1,5 +1,5 @@
 body{
-    background-color: aquamarine;
+    background-color: rgb(112, 175, 24);
     font-size:22px;
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     color: black;
@@ -44,7 +44,7 @@ body{
     padding-top: 10px;
     padding-left: auto;
     margin:0;
-    background-color: blue;
+    background-color: rgb(78, 43, 19);
     font-size:24px;
     color:white;
     padding-bottom: 10px;
@@ -70,7 +70,7 @@ footer{
     text-align: center;
     margin-top: 3rem;
     padding: 1rem 0;
-    background: black;
+    background: rgb(78, 43, 19);
     color: #888;
 }
 
@@ -386,6 +386,7 @@ footer a:hover {
 
 #donation-records {
     list-style-type: none;
+    text-align: center;
     padding: 0;
 }
 
