@@ -9,19 +9,12 @@
 <body>
 <header>
     <div class="navbar">
-        <img src="logo.png"/>
+        <img src="logo.png" style="padding-left: 15px;"/>
         <a href="#">Home</a>
-        <div class="dropdown">
-            <a href="#">Contact us</a>
-            <div class="dropdown-content">
-                <a href="#">Email</a>
-                <a href="#">Phone</a>
-                <a href="#">Social Media</a>
-            </div>
-        </div>
-        <a href="#" id="login-btn">Log in</a>
         <a href="#" id="donate-btn">Donate</a>
         <a href="#" id="fundraise-btn">Fundraise</a>
+        <a href="#" id="about-btn">About us</a>
+        <a href="login.html" id="login-btn" style="padding-right: 3%;">Log in</a>        
         </div>
        
     </div>
@@ -82,8 +75,8 @@
 </div>
 
 <div class="image-display">
-    <img src="front-face.png" class="front-image"/>  
-    <div class="subtext">Join us to make a difference! A few clicks is all it takes to donate and help make the world a better place.</div>
+    <img src="front-face.png"/>  
+
     <div class="left-images">
         <div class="image-container">
             <img src="friend-and-family.png" alt="Logo"/>
@@ -108,22 +101,23 @@
 </div>
 
 
-<!-- <div class="text-container-image">
+<div class="text-container-image">
     
     <div class="heading">
         <b> Crowd-funding platform    </b>
     </div>
     <br>
     <div class="info">
-        Join us to make a difference!  A few clicks is all it takes to donate and help make the world a better place.
+        Get started in just a few minutes — with helpful new tools,
+        it's easier than ever to pick the perfect title, write a compelling story, and share it with the world.
     </div>
     
-</div> -->
+</div>
 
 
 
 
-<div id="login-modal" class="modal">
+<!-- <div id="login-modal" class="modal">
     <div class="modal-content">
         <span class="close">&times;</span>
         <h2>Log In</h2>
@@ -133,45 +127,32 @@
             <button type="submit">Log In</button>
         </form>
     </div>
-</div>
+</div> -->
     
 <script>
-    document.addEventListener("DOMContentLoaded", () => {
-    const textContainer = document.querySelector(".text-container-image");
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add("show");
-            }
-        });
-    }, { threshold: 0.3 });
-
-    observer.observe(textContainer);
-    });
         document.addEventListener("DOMContentLoaded", () => {
         // Login Modal
-        const loginBtn = document.getElementById("login-btn");
-        const loginModal = document.getElementById("login-modal");
-        const closeBtns = document.querySelectorAll(".close");
+        // const loginBtn = document.getElementById("login-btn");
+        // const loginModal = document.getElementById("login-modal");
+         const closeBtns = document.querySelectorAll(".close");
 
-        loginBtn.onclick = (event) => {
-            event.preventDefault();
-            loginModal.style.display = "flex";
-        };
+        // loginBtn.onclick = (event) => {
+        //     event.preventDefault();
+        //     loginModal.style.display = "flex";
+        // };
 
-        closeBtns.forEach((closeBtn) => {
+         closeBtns.forEach((closeBtn) => {
             closeBtn.onclick = () => {
                 const modal = closeBtn.closest(".modal");
                 modal.style.display = "none";
             };
         });
 
-        window.onclick = (event) => {
-            if (event.target.classList.contains("modal")) {
-                event.target.style.display = "none";
-            }
-        };
+        // window.onclick = (event) => {
+        //     if (event.target.classList.contains("modal")) {
+        //         event.target.style.display = "none";
+        //     }
+        // };
 
         // Donate Modal
         const donateBtn = document.getElementById("donate-btn");
@@ -196,7 +177,8 @@
                 donationItem.innerHTML = `
                     <strong>Reason:</strong> ${reason}<br>
                     <strong>Story:</strong> ${story}<br>
-                    <strong>Amount:</strong> $${amount}`;
+                    <strong>Amount:</strong> $${amount}
+                `;
                 donationList.appendChild(donationItem);
 
                 donateForm.reset();
@@ -241,21 +223,21 @@
     Join our community and support causes that matter. Fundraising has never been easier or more impactful. Start your journey with us today!
 </div>
 <br>
-<div class="text-container-about">
+<!-- <div class="text-container-about">
     <b>Fundraising on this platform is easy,powerful and trusted.</b>
     Get what you need to help your fundraiser succeed on CrowndFunding, whether you're raising money for yourself, friends, family, or charity.
     Whenever you need help, you can ask here.
     
-</div>
+</div> -->
 <div id="donation-records" class="donation-records">
     <h3>Donation Records</h3>
     <ul id="donation-list"></ul>
 </div>
 <footer>
-    <p>Email:crowd-funding@cfall.com</p>
-    <p>Phone:9347201872</p>
-    <p>Social Media:</p>
-    <p>&copy;2025 Made by developers with love.</p>
+    <p>Email: support@fundhive.com</p>
+    <p>Phone: +91 9876543210</p>
+    <p>Social Media: </p>
+    <p>&copy;2025 FundHive</p>
 </footer>
 </body>
 </html>
