@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+    
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>FundHive</title>
     <link rel="icon" href="./images/logo.png"/>
     <link rel="stylesheet" href="styles.css">
+    <script src="script.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <script src="script.js"></script>
 </head>
+
+
 <body>
     <header>
         <div class="nav-container">
@@ -25,19 +28,24 @@
             </nav>
         </div>
     </header>
-    <div class="register-login-wrapper">
-        <div class="register-login-container">
-            <h2>Login</h2>
-            <form>
-                <input type="text" placeholder="Username" required>
-                <input type="password" placeholder="Password" required>
-                <button type="submit" class="btn">Login</button>
-            </form>
-            <div class="register-login">
-                <p>Don't have an account? <a href="register.html">Register</a></p>
-            </div>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Change the world with FundHive</h1>
+            <p>Empower ideas, fuel innovation, and make an impact.<br>Join a community that believes in possibilities!</p>
         </div>
-    </div>
+    </section>
+
+    <section class="causes">
+        <h1>Some Causes</h1>
+        <div class="gallery">
+            <div class="card"><img src="images/creative-project.jpg" alt="Creative Projects"><h3>Creative Projects</h3></div>
+            <div class="card"><img src="images/environment.jpg" alt="Environment"><h3>Environment</h3></div>
+            <div class="card"><img src="images/community.jpg" alt="Community"><h3>Communuty</h3></div>
+        </div>
+    </section>
+
+    <div class="foot_cont">
 
 <!-- To be removed -->
 <div id="donate-modal" class="modal">
@@ -46,7 +54,7 @@
         <h2>Donate to a Cause</h2>
         <form id="donate-form">
             <label for="amount">Donation Amount:</label><br>
-            <input type="number" id="amount" name="amount" min="1" placeholder="Enter amount in USD" required/><br><br>
+            <input type="number" id="amount" name="amount" min="1" placeholder="Enter amount in INR" required/><br><br>
 
             <button type="submit" id="donate-submit">Submit Donation</button>
         </form>
@@ -83,10 +91,10 @@
         </form>
     </div>
 </div>
-<!-- <div id="donation-records" class="donation-records">
+<div id="donation-records" class="donation-records">
     <h3>Donation Records</h3>
     <ul id="donation-list"></ul>
-</div> -->
+</div>
 <!-- End -->
 
     <footer>
@@ -101,5 +109,7 @@
         <p>Phone: +91 9876543210</p>
         <p>&copy;2025 FundHive</p>
     </footer>
+    </div>
+
 </body>
 </html>

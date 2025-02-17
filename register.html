@@ -3,84 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register Page</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f4f4f4;
-            position: relative;
-        }
-        .logo {
-            position: absolute;
-            top: 1px;
-            left: 30px;
-            width: 100px;
-        }
-        .register-container {
-            background: rgba(255, 255, 255, 0.8);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 300px;
-            text-align: center;
-        }
-        h2 {
-            margin-bottom: 20px;
-        }
-        input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        .btn {
-            width: 100%;
-            padding: 10px;
-            background: #28a745;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .btn:hover {
-            background: #218838;
-        }
-        .login {
-            margin-top: 15px;
-        }
-        .login a {
-            color: #007bff;
-            text-decoration: none;
-        }
-        .login a:hover {
-            text-decoration: underline;
-        }
-    </style>
+    <title>Register</title>
+    <link rel="icon" href="./images/logo.png"/>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="script.js"></script>
 </head>
 <body>
-    <a href="crowd-funding.html"><img src="./images/logo.png" alt="Logo" class="logo"></a>
-    <div class="register-container">
-        <h2>Register</h2>
-        <form>
-            <input type="text" placeholder="Username" required>
-            <input type="email" placeholder="Email" required>
-            <input type="password" placeholder="Password" required>
-            <input type="password" placeholder="Confirm Password" required>
-            <button type="submit" class="btn">Register</button>
-        </form>
-        <div class="login">
-            <p>Already have an account? <a href="login.html">Login</a></p>
+    <header>
+        <div class="nav-container">
+            <a href="index.html"><img class="logo" src="images/logo.png"></a>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a id="donate-btn" href="#">Donate</a></li>
+                    <li><a id="fundraise-btn" href="#">Fundraise</a></li>
+                    <li><a href="#">About</a></li>
+                    <li><a href="login.html">Login</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <div class="register-login-wrapper">
+        <div class="register-login-container">
+            <h2>Register</h2>
+            <form>
+                <input type="text" placeholder="Username" required>
+                <input type="email" placeholder="Email" required>
+                <input type="password" placeholder="Password" required>
+                <input type="password" placeholder="Confirm Password" required>
+                <button type="submit" class="btn">Register</button>
+            </form>
+            <div class="register-login">
+                <p>Already have an account? <a href="login.html">Login</a></p>
+            </div>
         </div>
     </div>
+
+<!-- To be removed -->
+<div id="donate-modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Donate to a Cause</h2>
+        <form id="donate-form">
+            <label for="amount">Donation Amount:</label><br>
+            <input type="number" id="amount" name="amount" min="1" placeholder="Enter amount in USD" required/><br><br>
+
+            <button type="submit" id="donate-submit">Submit Donation</button>
+        </form>
+    </div>
+</div>
+
+<div id="fundraise-modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Start a Fundraiser</h2>
+        <form id="fundraise-form">
+            <label for="fundraise-option">Select an Option:</label><br>
+            <select id="fundraise-option" name="fundraise-option" required>
+                <option value="">Choose an option</option>
+                <option value="Creative Projects">Creative Projects</option>
+                <option value="Environment">Environment</option>
+                <option value="Community">Community</option>
+                <option value="Others">Others</option>
+            </select>
+            <br>
+            <br>
+
+            <label for="fundraise-reason">Reason for Fundraising:</label><br>
+            <textarea id="fundraise-reason" name="fundraise-reason" rows="4" placeholder="Enter your reason..." required></textarea>
+            <br>
+            <br>
+
+            <label for="fundraise-story">Your Story:</label><br>
+            <textarea id="fundraise-story" name="fundraise-story" rows="6" placeholder="Share your story..." required></textarea>
+            <br>
+            <br>
+
+            <button type="submit" id="fundraise-submit">Submit Fundraiser</button>
+        </form>
+    </div>
+</div>
+<!-- <div id="donation-records" class="donation-records">
+    <h3>Donation Records</h3>
+    <ul id="donation-list"></ul>
+</div> -->
+<!-- End -->
+
+    <footer>
+        <h3>Follow Us</h3>
+        <div class="social-icons">
+            <a href="#"><i class="fab fa-facebook-f"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+        </div>
+        <br>
+        <p>Email: support@fundhive.com</p>
+        <p>Phone: +91 9876543210</p>
+        <p>&copy;2025 FundHive</p>
+    </footer>
 </body>
 </html>

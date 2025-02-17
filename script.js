@@ -1,16 +1,16 @@
 document.addEventListener("DOMContentLoaded", () => {
-    let activeFundraisers = []; // Array to store active fundraisers
+    let activeFundraisers = []; 
 
     const donateBtn = document.getElementById("donate-btn");
     const donateModal = document.getElementById("donate-modal");
     const donateForm = document.getElementById("donate-form");
     const donationList = document.getElementById("donation-list");
-    const fundraiserSelect = document.createElement("select"); // Dropdown for selecting fundraisers
+    const fundraiserSelect = document.createElement("select"); 
 
     fundraiserSelect.id = "fundraiser-select";
     fundraiserSelect.required = true;
 
-    donateForm.insertBefore(fundraiserSelect, donateForm.firstChild); // Add select field to donation form
+    donateForm.insertBefore(fundraiserSelect, donateForm.firstChild); 
 
     donateBtn.onclick = (event) => {
         event.preventDefault();
@@ -42,14 +42,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const donationItem = document.createElement("li");
             donationItem.innerHTML = `
-                <strong>${selectedFundraiser.option} - ${selectedFundraiser.reason}</strong>: $${amount}
+                <strong>${selectedFundraiser.option} - ${selectedFundraiser.reason}</strong>: Rs. ${amount}
             `;
             donationList.appendChild(donationItem);
 
             donateForm.reset();
             donateModal.style.display = "none";
 
-            alert(`Thank you for donating $${amount} to "${selectedFundraiser.reason}"`);
+            alert(`Thank you for donating Rs. ${amount} to "${selectedFundraiser.reason}"`);
         } else {
             alert("Please select a fundraiser and enter a donation amount.");
         }
@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const fundraiseModal = document.getElementById("fundraise-modal");
     const fundraiseForm = document.getElementById("fundraise-form");
 
-    // close button 
+
     const closeBtns = document.querySelectorAll(".close");
 
     closeBtns.forEach((closeBtn) => {
