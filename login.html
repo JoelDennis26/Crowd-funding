@@ -28,9 +28,9 @@
     <div class="register-login-wrapper">
         <div class="register-login-container">
             <h2>Login</h2>
-            <form>
-                <input type="text" placeholder="Username" required>
-                <input type="password" placeholder="Password" required>
+            <form id="loginform">
+                <input type="email" id="loginEmail" placeholder="Email" required>
+                <input type="password" id="loginPassword" placeholder="Password" required>
                 <button type="submit" class="btn">Login</button>
             </form>
             <div class="register-login">
@@ -38,6 +38,31 @@
             </div>
         </div>
     </div>
+
+    <script href="script.js"></script>
+<!-- 
+    <script>
+        document.getElementById("loginform").addEventListener('submit',async(e)=>{
+            e.preventDefault();
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+
+            const response = await fetch('http://localhost:3000/login',{
+                method:'POST',
+                headers:{'Content-type':'application/json'},
+                body: JSON.stringify({email,password})
+            });
+
+            const data = await response.json();
+            if(data.token){
+                localStorage.setItem('token',data.token);
+                alert('Sucess');
+                window.location.href='dashboard.html';
+            }else{
+                alert(data.message);
+            }
+        });
+    </script> -->
 
 <!-- To be removed -->
 <div id="donate-modal" class="modal">

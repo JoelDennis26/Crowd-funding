@@ -28,18 +28,55 @@
     <div class="register-login-wrapper">
         <div class="register-login-container">
             <h2>Register</h2>
-            <form>
-                <input type="text" placeholder="Username" required>
-                <input type="email" placeholder="Email" required>
-                <input type="password" placeholder="Password" required>
-                <input type="password" placeholder="Confirm Password" required>
+            <form id="registerform">
+                <input type="text" id="regUsername" placeholder="Username" required>
+                <input type="email" id="regEmail" placeholder="Email" required>
+                <input type="password" id="regPassword" placeholder="Password" required>
+                <input type="password" id="regConfirmPassword" placeholder="Confirm Password" required>
                 <button type="submit" class="btn">Register</button>
             </form>
             <div class="register-login">
                 <p>Already have an account? <a href="login.html">Login</a></p>
             </div>
+
         </div>
     </div>
+
+    <script href="script.js"></script>
+<!-- 
+    <script>
+        document.getElementById('registerform').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('regUsername').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
+
+            // Basic Validation (Check Password Match)
+            if (password !== confirmPassword) {
+                alert('Passwords do not match!');
+                return;
+            }
+
+            // Send Data to Backend
+            const response = await fetch('http://localhost:3000/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, email, password })
+            });
+
+            const data = await response.json();
+            
+            if (response.ok) {
+                alert('Registration Successful!');
+                window.location.href = 'login.html'; // Redirect to Login Page
+            } else {
+                alert(data.message || 'Registration Failed');
+            }
+        });
+
+    </script> -->
 
 <!-- To be removed -->
 <div id="donate-modal" class="modal">
