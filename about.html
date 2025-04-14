@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>FundHive - About Us</title>
+        <link rel="icon" href="./images/icon-logo.png" />
+        <link rel="stylesheet" href="styles.css">
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    </head>
+<body>
+    <header>
+        <div class="nav-container">
+            <a href="index.html"><img class="logo" src="images/logo.png" alt="FundHive Logo"></a>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="donate.html">Donate</a></li>
+                    <li><a href="fundraiser.html">Fundraise</a></li>
+                    <li><a href="login.html">Login</a></li>
+                    <li><a href="register.html">Register</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="section">
+        <h1>About Us</h1>
+    </div>
+
+    <div class="section">
+        <h2>The Problem We're Addressing</h2>
+        <p>Every day, millions of people have incredible ideas, urgent needs, and life-changing initiatives—but lack the financial support to bring them to life. Whether it’s funding creative projects, supporting environmental causes, or helping a community in crisis, access to funding remains a major hurdle.</p>
+    </div>
+
+    <div class="section">
+        <h2>Why It Needs to Be Solved</h2>
+        <p>Traditional funding methods are often slow, exclusive, and filled with barriers. Banks require collateral, grants take months, and venture capital is selective. Crowdfunding offers an alternative—one that empowers individuals, small businesses, and nonprofit initiatives by allowing communities to contribute directly to causes they care about.</p>
+    </div>
+
+    <div class="section">
+        <h2>How We Plan on Solving It</h2>
+        <p>FundHive is a crowdfunding platform built with transparency, security, and accessibility in mind. We provide:</p>
+        <ul>
+            <li>A seamless platform where anyone can create and support fundraisers.</li>
+            <li>Secure transactions to ensure funds go exactly where they're needed.</li>
+            <li>A strong community that believes in making a difference together.</li>
+        </ul>
+        <p>We are not a certified company (yet), but we operate with honesty and integrity—our goal is not to steal money, but to create a space where anyone can fund their dreams or support causes they believe in. Every transaction is recorded, and we are working on implementing strict fraud prevention measures.</p>
+    </div>
+
+    <div class="section mission">
+        <h2>Our Mission Statement</h2>
+        <p>"Empowering change by connecting people with the causes that matter most. Together, we can turn ideas into impact and challenges into opportunities."</p>
+    </div>
+
+    <script>
+        const sections = document.querySelectorAll('.section');
+
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('show');
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+
+        sections.forEach(section => {
+            observer.observe(section);
+        });
+    </script>
+
+</body>
+</html>
