@@ -5,9 +5,13 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const multer = require('multer');
+const path = require('path');
 
 const app = express();
 app.use(cors());
+app.use(express.static('uploads'));
+
 app.use(bodyParser.json());
 
 const db = mysql.createConnection({
@@ -24,6 +28,38 @@ db.connect(err => {
         console.log('Connected to MySQL');
     }
 });
+
+// Multer Config
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, 'uploads/'),
+    filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
+});
+const upload = multer({ storage });
+
+app.post('/create-fundraiser', async (req, res) => {
+    const { user_id, title, description, goal, category, image } = req.body;
+
+    console.log(user_id);
+
+    // Check if user_id exists
+    if (!user_id) {
+        return res.status(400).json({ message: "User not authenticated." });
+    }
+
+    // SQL query to insert the fundraiser into the database
+    const query = 'INSERT INTO fundraisers (user_id, title, description, goal, category, image_path) VALUES (?, ?, ?, ?, ?, ?)';
+    const values = [user_id, title, description, goal, category, image];
+
+    db.query(query, values, (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ message: "Server error" });
+        }
+
+        res.status(200).json({ message: "Fundraiser created successfully!" });
+    });
+});
+
 
 // REGISTER USER
 app.post('/register', async (req, res) => {
@@ -73,7 +109,7 @@ app.post('/login', (req, res) => {
             }
 
             const token = jwt.sign({ userId: results[0].id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-            res.json({ token });
+            res.json({ token, user_id: results[0].id });
         });
     });
 });
@@ -81,4 +117,36 @@ app.post('/login', (req, res) => {
 // START SERVER
 app.listen(3000, () => {
     console.log('Server running on port 3000');
+});
+
+app.post('/donate', (req, res) => {
+    const { user_id, fundraiser_id, amount, name, email } = req.body;
+
+    if (!user_id || !fundraiser_id || !amount || !name || !email) {
+        return res.status(400).json({ message: 'All fields are required.' });
+    }
+
+    // Check if the fundraiser exists
+    const checkFundraiserQuery = 'SELECT * FROM fundraisers WHERE id = ?';
+    db.query(checkFundraiserQuery, [fundraiser_id], (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ message: 'Server error' });
+        }
+        if (results.length === 0) {
+            return res.status(404).json({ message: 'Fundraiser not found' });
+        }
+
+        // Insert the donation into the donations table
+        const insertDonationQuery = 'INSERT INTO donations (user_id, fundraiser_id, amount, name, email) VALUES (?, ?, ?, ?, ?)';
+        const values = [user_id, fundraiser_id, amount, name, email];
+        
+        db.query(insertDonationQuery, values, (err, results) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).json({ message: 'Error processing donation' });
+            }
+            res.status(200).json({ message: 'Donation successful' });
+        });
+    });
 });

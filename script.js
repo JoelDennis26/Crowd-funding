@@ -120,32 +120,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
-
-    // LOGIN FORM HANDLING
-    if (document.getElementById('loginform')) {
-        document.getElementById('loginform').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-
-            const response = await fetch('http://localhost:3000/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                localStorage.setItem('token', data.token);
-                alert('Login successful!');
-                window.location.href = "index.html";
-            } else {
-                alert(data.message);
-            }
-        });
-    }
-
     // CHECK IF USER IS LOGGED IN
     function checkUserAuth() {
         const token = localStorage.getItem('token');
@@ -163,4 +137,157 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     checkUserAuth();
+    // Assuming you are using fetch for login
+    // document.getElementById('loginForm').addEventListener('submit', async function (e) {
+    //     e.preventDefault();
+
+    //     const username = document.getElementById('username').value;
+    //     const password = document.getElementById('password').value;
+
+    //     // Sending login credentials to the backend
+    //     const response = await fetch('/login', {
+    //         method: 'POST',
+    //         headers: {
+    //             'Content-Type': 'application/json',
+    //         },
+    //         body: JSON.stringify({ username, password }),
+    //     });
+
+    //     const result = await response.json();
+
+    //     if (response.ok) {
+    //         // Store user_id in localStorage
+    //         localStorage.setItem('user_id', result.user_id); // Store the user_id
+    //         window.location.href = 'fundraise.html'; // Redirect to fundraiser page
+    //     } else {
+    //         alert('Login failed!');
+    //     }
+    // });
+
+
+    // document.getElementById('campaignForm').addEventListener('submit', async (e) => {
+    //     e.preventDefault();
+    
+    //     // Collect form data
+    //     const title = document.getElementById('title').value;
+    //     const description = document.getElementById('description').value;
+    //     const goal = document.getElementById('goal').value;
+    //     const category = document.getElementById('category').value;
+    //     const image = document.getElementById('image').files[0];
+
+    //     // Get user_id from localStorage
+    //     const userId = localStorage.getItem('user_id');
+
+    //     if (!userId) {
+    //         alert("Please log in first.");
+    //         return;
+    //     }
+
+    //     // Prepare FormData to send
+    //     const formData = new FormData();
+    //     formData.append('user_id', userId);  // Append the user_id
+    //     formData.append('title', title);
+    //     formData.append('description', description);
+    //     formData.append('goal', goal);
+    //     formData.append('category', category);
+
+    //     if (image) {
+    //         formData.append('image', image);
+    //     }
+
+    //     // Send form data to backend
+    //     const response = await fetch('/your-endpoint-here', {
+    //         method: 'POST',
+    //         body: formData,
+    //     });
+
+    //     const result = await response.json();
+
+    //     if (response.ok) {
+    //         alert('Fundraiser started successfully!');
+    //         window.location.href = 'some-success-page.html';
+    //     } else {
+    //         alert(result.message || 'An error occurred.');
+    //     }
+    // });
+
+    document.getElementById('donationForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+    
+        // Get values from form
+        const name = document.getElementById('name').value;
+        const email = document.getElementById('email').value;
+        const amount = document.getElementById('amount').value;
+        const cause = document.getElementById('cause').value;
+        const fundraiser_id = /* You need to pass the correct fundraiser ID here, perhaps from the fundraiser page URL or data */;
+        const user_id = localStorage.getItem('user_id');
+    
+        if (!user_id) {
+            alert("Please login to donate.");
+            return;
+        }
+    
+        // Prepare data for donation
+        const donationData = {
+            user_id,
+            fundraiser_id,
+            amount,
+            name,
+            email
+        };
+    
+        // Send donation request to server
+        fetch('/donate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(donationData)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.message === 'Donation successful') {
+                alert('Thank you for your donation!');
+                window.location.href = 'thank-you.html';  // Redirect to a thank you page or back to the fundraiser
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+        });
+    });
+    
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const loginForm = document.getElementById('loginForm');
+
+    if (loginForm) {
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            fetch('http://localhost:3000/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.user_id) {
+                    localStorage.setItem('user_id', data.user_id);
+                    // Optional: localStorage.setItem('token', data.token);
+                    window.location.href = 'index.html';
+                } else {
+                    alert('Login failed. Please check your credentials.');
+                }
+            })
+            .catch(err => {
+                console.error('Login error:', err);
+                alert('An error occurred during login.');
+            });
+        });
+    }
 });
