@@ -14,9 +14,15 @@ header{
     justify-content: center;
 }
 
+#auth-links{
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+}
+
 .auth-container {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 10px; /* Adds space between Login and Register */
 }
 
