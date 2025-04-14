@@ -13,7 +13,7 @@ app.use(bodyParser.json());
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',  // Change if needed
-    password: 'Joeldennis12!@',  // Change if needed
+    password: 'web@203E',  // Change if needed
     database: 'crowd_funding'
 });
 

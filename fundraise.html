@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FundHive - Fundraise</title>
+    <link rel="icon" href="./images/icon-logo.png" />
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js" defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+
+<body>
+    <header>
+        <div class="nav-container">
+            <a href="index.html"><img class="logo" src="images/logo.png" alt="FundHive Logo"></a>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="donate.html">Donate</a></li>
+                    <li><a href="#">About</a></li>
+                    <li><a href="login.html" id="login-link">Login</a></li>
+                    <li><a href="register.html" id="register-link">Register</a></li>                    
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Start Your Fundraiser</h1>
+            <p>Empower ideas, fuel innovation, and make an impact.<br>Join a community that believes in possibilities!</p>
+        </div>
+    </section>
+
+    <section class="fundraiser-form">
+        <h2>Launch Your Campaign</h2>
+        <form id="campaignForm">
+            <label for="title">Campaign Title:</label>
+            <input type="text" id="title" name="title" required>
+
+            <label for="description">Description:</label>
+            <textarea id="description" name="description" required></textarea>
+            <br>
+            <br>
+            <label for="goal">Fundraising Goal (INR):</label>
+            <input type="number" id="goal" name="goal" required>
+            <br><br>
+            <label for="category">Category:</label>
+            <br>
+            <select id="category" name="category">
+                <option value="education">Education</option>
+                <option value="medical">Medical</option>
+                <option value="disaster">Disaster Relief</option>
+                <option value="startup">Startup</option>
+                <option value="other">Other</option>
+            </select>
+            <br>
+            <label for="image">Campaign Image:</label>
+            <input type="file" id="image" name="image">
+            <br>
+            <button type="submit">Start Fundraising</button>
+        </form>
+    </section>
+
+    <section id="mission">
+        <h2>Our Mission</h2>
+        <p>FundHive is dedicated to creating a transparent and supportive space for innovators, dreamers, and those in need. We ensure the legitimacy of fundraisers through a thorough verification process. Whether you're seeking support for a medical emergency, launching a startup, or building community projects, FundHive is here to help you get the support you deserve.</p>
+    </section>
+
+    <footer>
+        <h3>Follow Us</h3>
+        <div class="social-icons">
+            <a href="#"><i class="fab fa-facebook-f"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+        </div>
+        <br>
+        <p>Email: support@fundhive.com</p>
+        <p>Phone: +91 9876543210</p>
+        <p>&copy;2025 FundHive</p>
+    </footer>
+</body>
+
+</html>
