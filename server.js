@@ -12,7 +12,10 @@ const app = express();
 app.use(cors());
 app.use(express.static('uploads'));
 
+// Body parsers
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true })); // Added to parse form-urlencoded data
+app.use(express.json());
 
 const db = mysql.createConnection({
     host: 'localhost',
@@ -34,32 +37,7 @@ const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, 'uploads/'),
     filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
 });
-const upload = multer({ storage });
-
-app.post('/create-fundraiser', async (req, res) => {
-    const { user_id, title, description, goal, category, image } = req.body;
-
-    console.log(user_id);
-
-    // Check if user_id exists
-    if (!user_id) {
-        return res.status(400).json({ message: "User not authenticated." });
-    }
-
-    // SQL query to insert the fundraiser into the database
-    const query = 'INSERT INTO fundraisers (user_id, title, description, goal, category, image_path) VALUES (?, ?, ?, ?, ?, ?)';
-    const values = [user_id, title, description, goal, category, image];
-
-    db.query(query, values, (err, results) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ message: "Server error" });
-        }
-
-        res.status(200).json({ message: "Fundraiser created successfully!" });
-    });
-});
-
+const upload = multer({ storage:storage });
 
 // REGISTER USER
 app.post('/register', async (req, res) => {
@@ -91,17 +69,11 @@ app.post('/login', (req, res) => {
             return res.status(401).json({ message: 'Invalid email or password' });
         }
 
-        // console.log("User query results:", results);
-
         const hashedPassword = results[0].password_hash;
-
-        // console.log(hashedPassword);
 
         if(!hashedPassword){
             return res.status(500).json({ message: 'Password not found in database' });
         }
-
-        // console.log("Comparing provided password:", password, "with hashed password:", hashedPassword);
 
         bcrypt.compare(password, hashedPassword, (err, isMatch) => {
             if (err || !isMatch) {
@@ -114,11 +86,49 @@ app.post('/login', (req, res) => {
     });
 });
 
-// START SERVER
-app.listen(3000, () => {
-    console.log('Server running on port 3000');
+app.post('/create-fundraiser', verifyToken,upload.single('image'), (req, res) => {
+    const { userId } = req.user;  // User ID is decoded from JWT
+    const { title, description, goal, category, image } = req.body;
+
+    console.log("user - id ",userId);
+    console.log("req body ",req.body);
+    console.log("req file ",req.file);
+    // Process and create the fundraiser
+    db.query(
+        'INSERT INTO fundraisers (user_id, title, description, goal, category, image_path) VALUES (?, ?, ?, ?, ?, ?)',
+        [userId, title, description, goal, category, image],
+        (err, results) => {
+            if (err) {
+                console.error("❌ SQL ERROR:", err);
+                return res.status(500).json({ message: 'Database error' });
+            }
+            res.json({ message: 'Fundraiser created successfully' });
+        }
+    );
 });
 
+function verifyToken(req, res, next) {
+    const token = req.headers['authorization']?.split(' ')[1];  // Get token from header
+
+    console.log("Token recieved: "+token);
+
+    if (!token) {
+        return res.status(403).json({ message: 'Token is required' });
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(403).json({ message: 'Invalid token' });
+        }
+
+        // Attach decoded user info to the request
+        req.user = decoded;
+        next();
+    });
+}
+
+
+// DONATE
 app.post('/donate', (req, res) => {
     const { user_id, fundraiser_id, amount, name, email } = req.body;
 
@@ -126,7 +136,6 @@ app.post('/donate', (req, res) => {
         return res.status(400).json({ message: 'All fields are required.' });
     }
 
-    // Check if the fundraiser exists
     const checkFundraiserQuery = 'SELECT * FROM fundraisers WHERE id = ?';
     db.query(checkFundraiserQuery, [fundraiser_id], (err, results) => {
         if (err) {
@@ -137,7 +146,6 @@ app.post('/donate', (req, res) => {
             return res.status(404).json({ message: 'Fundraiser not found' });
         }
 
-        // Insert the donation into the donations table
         const insertDonationQuery = 'INSERT INTO donations (user_id, fundraiser_id, amount, name, email) VALUES (?, ?, ?, ?, ?)';
         const values = [user_id, fundraiser_id, amount, name, email];
         
@@ -149,4 +157,9 @@ app.post('/donate', (req, res) => {
             res.status(200).json({ message: 'Donation successful' });
         });
     });
+});
+
+// START SERVER
+app.listen(3000, () => {
+    console.log('Server running on port 3000');
 });

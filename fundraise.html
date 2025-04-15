@@ -22,7 +22,7 @@
                     <li><a href="about.html">About</a></li>
                     <li><a href="donate.html">Donate</a></li>
                     <li><a href="login.html" id="login-link">Login</a></li>
-                    <li><a href="register.html" id="register-link">Register</a></li>                    
+                    <li><a href="register.html" id="register-link">Register</a></li>
                 </ul>
             </nav>
         </div>
@@ -43,11 +43,12 @@
 
             <label for="description">Description:</label>
             <textarea id="description" name="description" required></textarea>
-            <br>
-            <br>
+            <br><br>
+
             <label for="goal">Fundraising Goal (INR):</label>
             <input type="number" id="goal" name="goal" required>
             <br><br>
+
             <label for="category">Category:</label>
             <br>
             <select id="category" name="category">
@@ -58,49 +59,66 @@
                 <option value="other">Other</option>
             </select>
             <br>
+
             <label for="image">Campaign Image:</label>
             <input type="file" id="image" name="image">
-            <br>
+            <br><br>
+
             <button type="submit">Start Fundraising</button>
         </form>
     </section>
-    <script>
-        document.getElementById('campaignForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-        
-            const form = new FormData(this);
-            const userId = localStorage.getItem('user_id'); // Make sure this exists!
-            
-            // if (!userId) {
-            //     alert('You must be logged in to create a fundraiser.');
-            //     return;
-            // }
-        
-            form.append('user_id', userId);
-        
-            try {
-                const response = await fetch('http://localhost:3000/create-fundraiser', {
-                    method: 'POST',
-                    body: form
-                });
-        
-                const result = await response.json();
-                alert(result.message);
-        
-                // Optional: reset the form or redirect
-                this.reset();
-            } catch (err) {
-                alert('Submission failed');
-                console.error(err);
-            }
-        });
-    </script>
-        
 
     <section id="mission">
         <h2>Our Mission</h2>
         <p>FundHive is dedicated to creating a transparent and supportive space for innovators, dreamers, and those in need. We ensure the legitimacy of fundraisers through a thorough verification process. Whether you're seeking support for a medical emergency, launching a startup, or building community projects, FundHive is here to help you get the support you deserve.</p>
     </section>
+
+    <script>
+        document.getElementById('campaignForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const form = new FormData(this);
+        
+        // Retrieve the JWT token from localStorage
+        const token = localStorage.getItem('token'); 
+        console.log("token = "+token);
+    
+        // Check if the token exists
+        if (!token) {
+            alert('You must be logged in to create a fundraiser.');
+            return;
+        }
+    
+        // Append user_id if needed or extract from form data
+        const userId = localStorage.getItem('user_id');
+        console.log("user id = "+userId);
+        form.append('user_id', userId);
+
+        for( const[key,value] of form.entries()){
+            console.log(key+" = "+value);
+        }
+
+    
+        try {
+            const response = await fetch('http://localhost:3000/create-fundraiser', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,  // Add JWT token here in Authorization header
+                },
+                body: form
+            });
+    
+            const result = await response.json();
+            alert(result.message);
+    
+            // Optional: reset the form or redirect
+            this.reset();
+        } catch (err) {
+            alert('Submission failed');
+            console.error(err);
+        }
+        }); 
+    </script>
 
     <footer>
         <h3>Follow Us</h3>

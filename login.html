@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="styles.css" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+  <!-- <script src="script.js"></script> -->
 </head>
 <body>
   <header>
@@ -38,37 +39,42 @@
       </div>
     </div>
   </div>
-
+  <!-- <script src="script.js"></script> -->
   <script>
     document.getElementById("loginform").addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const email = document.getElementById("loginEmail").value;
-      const password = document.getElementById("loginPassword").value;
-
-      try {
-        const response = await fetch("http://localhost:3000/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        });
-
-        const data = await response.json();
-
-        if (response.ok && data.token) {
-          localStorage.setItem("token", data.token);
-          alert("Login successful!");
-          window.location.href = "index.html";
-        } else {
-          alert(data.message || "Login failed. Please check your credentials.");
+        e.preventDefault();
+    
+        const email = document.getElementById("loginEmail").value;
+        const password = document.getElementById("loginPassword").value;
+    
+        try {
+          const response = await fetch("http://localhost:3000/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          });
+    
+          const data = await response.json();
+    
+          if (response.ok && data.token) {
+            // Save the JWT token in localStorage
+            localStorage.setItem("token", data.token);
+    
+            // Save the user ID in localStorage
+            localStorage.setItem("user_id", data.user_id);  // Save user_id from the backend
+    
+            alert("Login successful!");
+            window.location.href = "index.html";  // Redirect to the home page or dashboard
+          } else {
+            alert(data.message || "Login failed. Please check your credentials.");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          alert("Something went wrong. Please try again later.");
         }
-      } catch (error) {
-        console.error("Error:", error);
-        alert("Something went wrong. Please try again later.");
-      }
     });
   </script>
-
+  
   <footer>
     <h3>Follow Us</h3>
     <div class="social-icons">
@@ -82,4 +88,5 @@
     <p>&copy;2025 FundHive</p>
   </footer>
 </body>
+<!-- <script src="script.js"></script> -->
 </html>
