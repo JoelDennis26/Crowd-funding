@@ -93,6 +93,8 @@ app.post('/create-fundraiser', verifyToken,upload.single('image'), (req, res) =>
     console.log("user - id ",userId);
     console.log("req body ",req.body);
     console.log("req file ",req.file);
+    //print file path
+    console.log("file path ",req.file.path);
     // Process and create the fundraiser
     db.query(
         'INSERT INTO fundraisers (user_id, title, description, goal, category, image_path) VALUES (?, ?, ?, ?, ?, ?)',
@@ -102,7 +104,10 @@ app.post('/create-fundraiser', verifyToken,upload.single('image'), (req, res) =>
                 console.error("❌ SQL ERROR:", err);
                 return res.status(500).json({ message: 'Database error' });
             }
-            res.json({ message: 'Fundraiser created successfully' });
+            res.json({ 
+                message: 'Fundraiser created successfully' ,
+                image_path: req.file.path, // Send the image path back to the client
+            });
         }
     );
 });
@@ -128,34 +133,82 @@ function verifyToken(req, res, next) {
 }
 
 
-// DONATE
-app.post('/donate', (req, res) => {
-    const { user_id, fundraiser_id, amount, name, email } = req.body;
 
-    if (!user_id || !fundraiser_id || !amount || !name || !email) {
-        return res.status(400).json({ message: 'All fields are required.' });
+app.post('/donate', verifyToken, (req, res) => {
+    const { fundraiser_id, amount } = req.body;
+    const donor_id = req.user.id; // From authenticateToken middleware
+
+    if (!fundraiser_id || !amount || amount <= 0) {
+        return res.status(400).json({ message: 'Invalid donation request.' });
     }
 
-    const checkFundraiserQuery = 'SELECT * FROM fundraisers WHERE id = ?';
-    db.query(checkFundraiserQuery, [fundraiser_id], (err, results) => {
+    // First, fetch the fundraiser to validate existence and ownership
+    const fundraiserQuery = 'SELECT * FROM Fundraisers WHERE id = ? AND status = "active"';
+
+    db.query(fundraiserQuery, [fundraiser_id], (err, results) => {
         if (err) {
-            console.error(err);
-            return res.status(500).json({ message: 'Server error' });
+            console.error('Error fetching fundraiser:', err);
+            return res.status(500).json({ message: 'Server error.' });
+        }
+
+        if (results.length === 0) {
+            return res.status(404).json({ message: 'Fundraiser not found or not active.' });
+        }
+
+        const fundraiser = results[0];
+
+        // Prevent self-donation
+        if (fundraiser.user_id === donor_id) {
+            return res.status(403).json({ message: 'You cannot donate to your own fundraiser.' });
+        }
+
+        // Proceed to insert donation and update raised amount
+        const insertDonation = 'INSERT INTO Donations (user_id, fundraiser_id, amount) VALUES (?, ?, ?)';
+        const updateFundraiser = 'UPDATE Fundraisers SET raised = raised + ? WHERE id = ?';
+
+        db.query(insertDonation, [donor_id, fundraiser_id, amount], (err) => {
+            if (err) {
+                console.error('Error inserting donation:', err);
+                return res.status(500).json({ message: 'Failed to record donation.' });
+            }
+
+            db.query(updateFundraiser, [amount, fundraiser_id], (err) => {
+                if (err) {
+                    console.error('Error updating fundraiser amount:', err);
+                    return res.status(500).json({ message: 'Donation saved, but failed to update total.' });
+                }
+
+                res.json({ message: 'Donation successful.' });
+            });
+        });
+    });
+});
+
+// GET all fundraisers
+app.get('/fundraisers', (req, res) => {
+    console.log("Fetching fundraisers from DB...");
+    db.query('SELECT * FROM Fundraisers', (err, results) => {
+        if (err) {
+            console.error("Database error:", err);
+            return res.status(500).json({ error: err.message });
+        }
+        console.log(`Found ${results.length} fundraisers`);
+        res.json(results);
+    });
+});
+
+// GET single fundraiser
+app.get('/fundraisers/:id', (req, res) => {
+    const { id } = req.params;
+    db.query('SELECT * FROM Fundraisers WHERE id = ?', [id], (err, results) => {
+        if (err) {
+            console.error('Error fetching fundraiser:', err);
+            return res.status(500).json({ message: 'Error fetching fundraiser' });
         }
         if (results.length === 0) {
             return res.status(404).json({ message: 'Fundraiser not found' });
         }
-
-        const insertDonationQuery = 'INSERT INTO donations (user_id, fundraiser_id, amount, name, email) VALUES (?, ?, ?, ?, ?)';
-        const values = [user_id, fundraiser_id, amount, name, email];
-        
-        db.query(insertDonationQuery, values, (err, results) => {
-            if (err) {
-                console.error(err);
-                return res.status(500).json({ message: 'Error processing donation' });
-            }
-            res.status(200).json({ message: 'Donation successful' });
-        });
+        res.json(results[0]);
     });
 });
 
