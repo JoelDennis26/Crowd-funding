@@ -139,7 +139,7 @@ function verifyToken(req, res, next) {
 
 
 app.post('/donate', verifyToken, (req, res) => {
-    const { fundraiserId, amount } = req.body;
+    const { fundraiserId, amount ,name, email} = req.body;
     const donor_id = req.user.userId; // From authenticateToken middleware
 
     console.log(donor_id);
@@ -171,10 +171,10 @@ app.post('/donate', verifyToken, (req, res) => {
         }
 
         // Proceed to insert donation and update raised amount
-        const insertDonation = 'INSERT INTO Donations (user_id, fundraiser_id, amount) VALUES (?, ?, ?)';
+        const insertDonation = 'INSERT INTO Donations (user_id, fundraiser_id, amount, name, email) VALUES (?, ?, ?, ? , ?)';
         const updateFundraiser = 'UPDATE Fundraisers SET raised = raised + ? WHERE id = ?';
 
-        db.query(insertDonation, [donor_id, fundraiserId, amount], (err) => {
+        db.query(insertDonation, [donor_id, fundraiserId, amount,name,email], (err) => {
             if (err) {
                 console.error('Error inserting donation:', err);
                 return res.status(500).json({ message: 'Failed to record donation.' });
