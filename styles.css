@@ -679,3 +679,11 @@ form button:hover {
     }
 }
 
+.fundraiser-card .description {
+    white-space: normal;       /* Allows text to wrap */
+    overflow-wrap: break-word; /* Break long words if needed */
+    word-wrap: break-word;     /* For compatibility */
+    line-height: 1.5;
+    margin-bottom: 10px;
+    color:#555;
+}

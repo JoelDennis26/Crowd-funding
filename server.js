@@ -37,7 +37,7 @@ const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, 'uploads/'),
     filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
 });
-const upload = multer({ storage:storage });
+const upload = multer({ storage });
 
 // REGISTER USER
 app.post('/register', async (req, res) => {
@@ -88,7 +88,9 @@ app.post('/login', (req, res) => {
 
 app.post('/create-fundraiser', verifyToken,upload.single('image'), (req, res) => {
     const { userId } = req.user;  // User ID is decoded from JWT
-    const { title, description, goal, category, image } = req.body;
+    const { title, description, goal, category } = req.body;
+
+    const image_path = req.file ? req.file.path.replace(/\\/g, '/') : null;
 
     console.log("user - id ",userId);
     console.log("req body ",req.body);
@@ -98,7 +100,7 @@ app.post('/create-fundraiser', verifyToken,upload.single('image'), (req, res) =>
     // Process and create the fundraiser
     db.query(
         'INSERT INTO fundraisers (user_id, title, description, goal, category, image_path) VALUES (?, ?, ?, ?, ?, ?)',
-        [userId, title, description, goal, category, image],
+        [userId, title, description, goal, category, image_path],
         (err, results) => {
             if (err) {
                 console.error("❌ SQL ERROR:", err);
@@ -127,7 +129,9 @@ function verifyToken(req, res, next) {
         }
 
         // Attach decoded user info to the request
-        req.user = decoded;
+        req.user = {
+            userId: decoded.userId  // Make sure this matches what you put in the token
+        };
         next();
     });
 }
@@ -135,17 +139,21 @@ function verifyToken(req, res, next) {
 
 
 app.post('/donate', verifyToken, (req, res) => {
-    const { fundraiser_id, amount } = req.body;
-    const donor_id = req.user.id; // From authenticateToken middleware
+    const { fundraiserId, amount } = req.body;
+    const donor_id = req.user.userId; // From authenticateToken middleware
 
-    if (!fundraiser_id || !amount || amount <= 0) {
+    console.log(donor_id);
+
+    // print fundraiserid and amount
+    console.log(fundraiserId+" "+amount)
+    if (!fundraiserId || !amount || amount <= 0) {
         return res.status(400).json({ message: 'Invalid donation request.' });
     }
 
     // First, fetch the fundraiser to validate existence and ownership
     const fundraiserQuery = 'SELECT * FROM Fundraisers WHERE id = ? AND status = "active"';
 
-    db.query(fundraiserQuery, [fundraiser_id], (err, results) => {
+    db.query(fundraiserQuery, [fundraiserId], (err, results) => {
         if (err) {
             console.error('Error fetching fundraiser:', err);
             return res.status(500).json({ message: 'Server error.' });
@@ -166,13 +174,13 @@ app.post('/donate', verifyToken, (req, res) => {
         const insertDonation = 'INSERT INTO Donations (user_id, fundraiser_id, amount) VALUES (?, ?, ?)';
         const updateFundraiser = 'UPDATE Fundraisers SET raised = raised + ? WHERE id = ?';
 
-        db.query(insertDonation, [donor_id, fundraiser_id, amount], (err) => {
+        db.query(insertDonation, [donor_id, fundraiserId, amount], (err) => {
             if (err) {
                 console.error('Error inserting donation:', err);
                 return res.status(500).json({ message: 'Failed to record donation.' });
             }
 
-            db.query(updateFundraiser, [amount, fundraiser_id], (err) => {
+            db.query(updateFundraiser, [amount, fundraiserId], (err) => {
                 if (err) {
                     console.error('Error updating fundraiser amount:', err);
                     return res.status(500).json({ message: 'Donation saved, but failed to update total.' });
