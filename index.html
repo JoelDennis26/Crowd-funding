@@ -7,16 +7,85 @@
     <title>FundHive</title>
     <link rel="icon" href="./images/icon-logo.png"/>
     <link rel="stylesheet" href="styles.css">
-    <script src="script.js"></script>
+    <script src="script.js" defer></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-</head>
+    <style>
+        .donation-records {
+            margin: 40px auto;
+            padding: 25px;
+            max-width: 900px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border: 1px solid #e0e6ed;
+        }
 
+        .donation-records h3 {
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            color: #2c3e50;
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f4f8;
+        }
+
+        #donation-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .donation-record {
+            padding: 15px;
+            margin: 10px 0;
+            background-color: #f8fafc;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .donation-record:hover {
+            background-color: #f0f7ff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+
+        .donation-record strong {
+            color: #3498db;
+        }
+
+        .donation-record em {
+            color: #2ecc71;
+            font-style: normal;
+            font-weight: 500;
+        }
+
+        .donation-record small {
+            display: block;
+            margin-top: 5px;
+            color: #7f8c8d;
+            font-size: 0.85rem;
+        }
+
+        .no-donations {
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
 
 <body>
     <header>
         <div class="nav-container">
-            <a href="index.html"><img class="logo" src="images/logo.png"></a>
+            <a href="index.html"><img class="logo" src="images/logo.png" alt="FundHive Logo"></a>
             <nav>
                 <ul>
                     <li><a href="about.html">About</a></li>
@@ -46,57 +115,15 @@
         </div>
     </section>
 
-    <div class="foot_cont">
-
-<!-- To be removed -->
-<div id="donate-modal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2>Donate to a Cause</h2>
-        <form id="donate-form">
-            <label for="amount">Donation Amount:</label><br>
-            <input type="number" id="amount" name="amount" min="1" placeholder="Enter amount in INR" required/><br><br>
-
-            <button type="submit" id="donate-submit">Submit Donation</button>
-        </form>
-    </div>
-</div>
-
-<div id="fundraise-modal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2>Start a Fundraiser</h2>
-        <form id="fundraise-form">
-            <label for="fundraise-option">Select an Option:</label><br>
-            <select id="fundraise-option" name="fundraise-option" required>
-                <option value="">Choose an option</option>
-                <option value="Creative Projects">Creative Projects</option>
-                <option value="Environment">Environment</option>
-                <option value="Community">Community</option>
-                <option value="Others">Others</option>
-            </select>
-            <br>
-            <br>
-
-            <label for="fundraise-reason">Reason for Fundraising:</label><br>
-            <textarea id="fundraise-reason" name="fundraise-reason" rows="4" placeholder="Enter your reason..." required></textarea>
-            <br>
-            <br>
-
-            <label for="fundraise-story">Your Story:</label><br>
-            <textarea id="fundraise-story" name="fundraise-story" rows="6" placeholder="Share your story..." required></textarea>
-            <br>
-            <br>
-
-            <button type="submit" id="fundraise-submit">Submit Fundraiser</button>
-        </form>
-    </div>
-</div>
-<div id="donation-records" class="donation-records">
-    <h3>Donation Records</h3>
-    <ul id="donation-list"></ul>
-</div>
-<!-- End -->
+    <section class="donation-records">
+        <h3>Recent Donations</h3>
+        <ul id="donation-list">
+            <li class="loading-message">Loading donation records...</li>
+        </ul>
+        <div class="view-all" style="text-align: center; margin-top: 20px;">
+            <a href="donate.html" class="btn" style="padding: 8px 20px; background-color: #3498db; color: white; border-radius: 4px; text-decoration: none;">View All Donations</a>
+        </div>
+    </section>
 
     <footer>
         <h3>Follow Us</h3>
@@ -110,7 +137,57 @@
         <p>Phone: +91 9876543210</p>
         <p>&copy;2025 FundHive</p>
     </footer>
-    </div>
 
+    <script>
+        // Enhanced donation records loading
+        async function loadDonationRecords() {
+            const donationList = document.getElementById('donation-list');
+            
+            try {
+                // Show loading state
+                donationList.innerHTML = '<li class="loading-message">Loading donation records...</li>';
+                
+                const response = await fetch('http://localhost:3000/donations?limit=5');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const records = await response.json();
+
+                if (records.length === 0) {
+                    donationList.innerHTML = '<li class="no-donations">No donations yet. Be the first to make a difference!</li>';
+                    return;
+                }
+
+                donationList.innerHTML = records.map(donation => `
+                    <li class="donation-record">
+                        <strong>${donation.name || 'Anonymous'}</strong> donated ₹${donation.amount.toLocaleString('en-IN')}
+                        ${donation.fundraiser_title ? ` to <em>${donation.fundraiser_title}</em>` : ''}
+                        ${donation.message ? `<div class="donation-message">"${donation.message}"</div>` : ''}
+                        <small>${new Date(donation.created_at).toLocaleString('en-IN', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        })}</small>
+                    </li>
+                `).join('');
+                
+            } catch (error) {
+                console.error("Failed to load donation records:", error);
+                donationList.innerHTML = '<li class="error-message">Error loading donation records. Please try again later.</li>';
+            }
+        }
+
+        // Run on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDonationRecords();
+            
+            // Refresh every 30 seconds to show new donations
+            setInterval(loadDonationRecords, 30000);
+        });
+    </script>
 </body>
 </html>

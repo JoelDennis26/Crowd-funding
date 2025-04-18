@@ -87,9 +87,8 @@
     </section>
     
     <script>
-        // DOM elements
-        const fundraisersContainer = document.getElementById('fundraisersContainer');
-        
+        let allFundraisers = []; // Store all fundraisers globally
+
         // Fetch fundraisers from API
         async function fetchFundraisers() {
             try {
@@ -107,16 +106,6 @@
             }
         }
 
-        // Display error message
-        function showError(message) {
-            fundraisersContainer.innerHTML = `
-                <div class="no-fundraisers error">
-                    <p>${message}</p>
-                    <button onclick="window.location.reload()">Retry</button>
-                </div>
-            `;
-        }
-
         // Format currency
         function formatCurrency(amount) {
             return new Intl.NumberFormat('en-IN', {
@@ -126,14 +115,25 @@
             }).format(amount).replace('₹', '₹');
         }
 
-        // Display fundraisers
-        async function displayFundraisers() {
-            const fundraisers = await fetchFundraisers();
+        // Display error message
+        function showError(message) {
+            const fundraisersContainer = document.getElementById('fundraisersContainer');
+            fundraisersContainer.innerHTML = `
+                <div class="no-fundraisers error">
+                    <p>${message}</p>
+                    <button onclick="window.location.reload()">Retry</button>
+                </div>
+            `;
+        }
+
+        // Function to render fundraisers
+        function renderFundraisers(fundraisers) {
+            const fundraisersContainer = document.getElementById('fundraisersContainer');
             
             if (fundraisers.length === 0) {
                 fundraisersContainer.innerHTML = `
                     <div class="no-fundraisers">
-                        <p>No active fundraisers found. Be the first to <a href="fundraise.html">start one</a>!</p>
+                        <p>No matching fundraisers found. Try a different search or category.</p>
                     </div>
                 `;
                 return;
@@ -141,6 +141,11 @@
 
             fundraisersContainer.innerHTML = fundraisers.map(fundraiser => `
                 <div class="fundraiser-card" data-id="${fundraiser.id}">
+                    <img src="${fundraiser.image_path}"
+                        alt="${fundraiser.title}" 
+                        class="fundraiser-image"
+                        onerror="this.onerror=null;this.src='images/default-fundraiser.jpg'">
+
                     <div class="fundraiser-content">
                         <h3>${fundraiser.title}</h3>
                         <p class="description">${fundraiser.description.substring(0, 120)}${fundraiser.description.length > 120 ? '...' : ''}</p>
@@ -155,11 +160,10 @@
                             <span class="raised">${formatCurrency(fundraiser.raised || 0)} raised</span>
                             <span class="goal">${formatCurrency(fundraiser.goal || 0)} goal</span>
                             <span class="percentage">${
-                            fundraiser.goal && fundraiser.raised
-                                ? Math.round((fundraiser.raised / fundraiser.goal) * 100)
-                                : 0
+                                fundraiser.goal && fundraiser.raised
+                                    ? Math.round((fundraiser.raised / fundraiser.goal) * 100)
+                                    : 0
                             }%</span>
-
                         </div>
                         <button class="donate-btn">Donate Now</button>
                     </div>
@@ -167,73 +171,101 @@
             `).join('');
         }
 
-        // Initialize when page loads
-        document.addEventListener('DOMContentLoaded', displayFundraisers);
+        // Search and filter logic
+        function filterFundraisers() {
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            const selectedCategory = document.getElementById('categoryFilter').value.toLowerCase();
 
-        fundraisersContainer.addEventListener('click', async (e) => {
-    if (e.target.classList.contains('donate-btn')) {
-        const card = e.target.closest('.fundraiser-card');
-        const fundraiserId = card.dataset.id;
-
-        try {
-            const res = await fetch(`http://localhost:3000/fundraisers/${fundraiserId}`);
-            const fundraiser = await res.json();
-
-            document.getElementById('fundraiserTitle').innerText = fundraiser.title;
-            document.getElementById('fundraiserGoal').innerText = fundraiser.goal;
-            document.getElementById('amountRaised').innerText = fundraiser.raised || 0;
-            document.getElementById('fundraiserId').value = fundraiser.id;
-            document.getElementById('userId').value = fundraiser.user_id;
-
-            const percentage = Math.min((fundraiser.raised / fundraiser.goal) * 100, 100);
-            document.getElementById('progressBar').style.width = `${percentage}%`;
-
-            document.getElementById('donationSection').style.display = 'block';
-            document.getElementById('donationSection').scrollIntoView({ behavior: 'smooth' });
-        } catch (error) {
-            alert('Error loading fundraiser details. Please try again later.');
-            console.error(error);
-        }
-    }
-    });
-    document.getElementById('donationForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const token = localStorage.getItem('token');
-        console.log("token of donation = "+token);
-        const formData = {
-            fundraiserId: document.getElementById('fundraiserId').value,
-            userId: document.getElementById('userId').value,
-            name: document.getElementById('name').value,
-            email: document.getElementById('email').value,
-            amount: document.getElementById('amount').value,
-            message: document.getElementById('message').value
-        };
-
-        try {
-            const res = await fetch('http://localhost:3000/donate', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json' ,
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(formData)
+            const filtered = allFundraisers.filter(f => {
+                const matchesSearch = f.title.toLowerCase().includes(searchQuery) || 
+                                      f.description.toLowerCase().includes(searchQuery);
+                const matchesCategory = selectedCategory === 'all' || 
+                                      f.category.toLowerCase() === selectedCategory;
+                return matchesSearch && matchesCategory;
             });
 
-            const result = await res.json();
-
-            if (res.ok) {
-                alert('Donation successful! Thank you!');
-                displayFundraisers(); // refresh fundraiser data
-                document.getElementById('donationForm').reset();
-                document.getElementById('donationSection').style.display = 'none';
-            } else {
-                alert(`Donation failed: ${result.message}`);
-            }
-        } catch (error) {
-            alert('Something went wrong. Please try again.');
-            console.error(error);
+            renderFundraisers(filtered);
         }
-    });
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', async () => {
+            allFundraisers = await fetchFundraisers();
+            renderFundraisers(allFundraisers);
+            
+            // Set up event listeners for search and filter
+            document.getElementById('searchInput').addEventListener('input', filterFundraisers);
+            document.getElementById('categoryFilter').addEventListener('change', filterFundraisers);
+        });
+
+        // Donation button click handler
+        document.getElementById('fundraisersContainer').addEventListener('click', async (e) => {
+            if (e.target.classList.contains('donate-btn')) {
+                const card = e.target.closest('.fundraiser-card');
+                const fundraiserId = card.dataset.id;
+
+                try {
+                    const res = await fetch(`http://localhost:3000/fundraisers/${fundraiserId}`);
+                    const fundraiser = await res.json();
+
+                    document.getElementById('fundraiserTitle').innerText = fundraiser.title;
+                    document.getElementById('fundraiserGoal').innerText = fundraiser.goal;
+                    document.getElementById('amountRaised').innerText = fundraiser.raised || 0;
+                    document.getElementById('fundraiserId').value = fundraiser.id;
+                    document.getElementById('userId').value = fundraiser.user_id;
+
+                    const percentage = Math.min((fundraiser.raised / fundraiser.goal) * 100, 100);
+                    document.getElementById('progressBar').style.width = `${percentage}%`;
+
+                    document.getElementById('donationSection').style.display = 'block';
+                    document.getElementById('donationSection').scrollIntoView({ behavior: 'smooth' });
+                } catch (error) {
+                    alert('Error loading fundraiser details. Please try again later.');
+                    console.error(error);
+                }
+            }
+        });
+
+        // Donation form submission
+        document.getElementById('donationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const token = localStorage.getItem('token');
+            console.log("token of donation = "+token);
+            const formData = {
+                fundraiserId: document.getElementById('fundraiserId').value,
+                userId: document.getElementById('userId').value,
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                amount: document.getElementById('amount').value,
+                message: document.getElementById('message').value
+            };
+
+            try {
+                const res = await fetch('http://localhost:3000/donate', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await res.json();
+
+                if (res.ok) {
+                    alert('Donation successful! Thank you!');
+                    // Refresh the fundraisers data
+                    allFundraisers = await fetchFundraisers();
+                    renderFundraisers(allFundraisers);
+                    document.getElementById('donationForm').reset();
+                    document.getElementById('donationSection').style.display = 'none';
+                } else {
+                    alert(`Donation failed: ${result.message}`);
+                }
+            } catch (error) {
+                alert('Something went wrong. Please try again.');
+                console.error(error);
+            }
+        });
     </script>
 
     <footer>

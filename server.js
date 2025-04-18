@@ -86,33 +86,66 @@ app.post('/login', (req, res) => {
     });
 });
 
-app.post('/create-fundraiser', verifyToken,upload.single('image'), (req, res) => {
-    const { userId } = req.user;  // User ID is decoded from JWT
-    const { title, description, goal, category } = req.body;
+// app.post('/create-fundraiser', verifyToken,upload.single('image'), (req, res) => {
+//     const { userId } = req.user;  // User ID is decoded from JWT
+//     const { title, description, goal, category } = req.body;
 
-    const image_path = req.file ? req.file.path.replace(/\\/g, '/') : null;
+//     const image_path = req.file ? req.file.path.replace(/\\/g, '/') : null;
 
-    console.log("user - id ",userId);
-    console.log("req body ",req.body);
-    console.log("req file ",req.file);
-    //print file path
-    console.log("file path ",req.file.path);
-    // Process and create the fundraiser
-    db.query(
-        'INSERT INTO fundraisers (user_id, title, description, goal, category, image_path) VALUES (?, ?, ?, ?, ?, ?)',
-        [userId, title, description, goal, category, image_path],
-        (err, results) => {
-            if (err) {
-                console.error("❌ SQL ERROR:", err);
-                return res.status(500).json({ message: 'Database error' });
-            }
-            res.json({ 
-                message: 'Fundraiser created successfully' ,
-                image_path: req.file.path, // Send the image path back to the client
-            });
+//     console.log("user - id ",userId);
+//     console.log("req body ",req.body);
+//     console.log("req file ",req.file);
+//     //print file path
+//     console.log("file path ",req.file.path);
+//     // Process and create the fundraiser
+//     db.query(
+//         'INSERT INTO fundraisers (user_id, title, description, goal, category, image_path) VALUES (?, ?, ?, ?, ?, ?)',
+//         [userId, title, description, goal, category, image_path],
+//         (err, results) => {
+//             if (err) {
+//                 console.error("❌ SQL ERROR:", err);
+//                 return res.status(500).json({ message: 'Database error' });
+//             }
+
+            
+//             res.json({ 
+//                 message: 'Fundraiser created successfully' ,
+//                 image_path: req.file.path, // Send the image path back to the client
+//             });
+//         }
+//     );
+// });
+
+app.post('/create-fundraiser', verifyToken, upload.single('image'), (req, res) => {
+    const { title, description, goal, category, end_date } = req.body;
+    const { userId } = req.user;
+
+    if (!title || !description || !goal || !category || !userId || !req.file) {
+        return res.status(400).json({ message: 'Missing required fields' });
+    }
+
+    const fundraiser = {
+        user_id: userId,
+        title,
+        description,
+        goal: parseFloat(goal),
+        category,
+        image_path: `/uploads/${req.file.filename}`,
+    };
+
+    db.query('INSERT INTO fundraisers SET ?', fundraiser, (err, result) => {
+        if (err) {
+            // if (err.code === 'ER_DUP_ENTRY') {
+            //     return res.status(409).json({ message: 'Duplicate fundraiser' });
+            // }
+            console.error('DB insert error:', err);
+            return res.status(500).json({ message: 'Server error' });
         }
-    );
+
+        return res.status(201).json({ message: 'Fundraiser created successfully' });
+    });
 });
+
 
 function verifyToken(req, res, next) {
     const token = req.headers['authorization']?.split(' ')[1];  // Get token from header
@@ -219,6 +252,34 @@ app.get('/fundraisers/:id', (req, res) => {
         res.json(results[0]);
     });
 });
+
+app.get('/donations', (req, res) => {
+    const limit = parseInt(req.query.limit) || 10; // Default to 10 if no limit specified
+    
+    const query = `
+        SELECT 
+            d.id, 
+            d.amount, 
+            d.created_at,
+            d.name,
+            f.title AS fundraiser_title
+        FROM Donations d
+        LEFT JOIN Fundraisers f ON d.fundraiser_id = f.id
+        ORDER BY d.created_at DESC
+        LIMIT ?
+    `;
+
+    console.log(query);
+    
+    db.query(query, [limit], (err, results) => {
+        if (err) {
+            console.error("Database error:", err);
+            return res.status(500).json({ error: err.message });
+        }
+        res.json(results);
+    });
+});
+
 
 // START SERVER
 app.listen(3000, () => {
