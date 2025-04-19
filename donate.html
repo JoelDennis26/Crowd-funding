@@ -141,7 +141,6 @@
 
             fundraisersContainer.innerHTML = fundraisers.map(fundraiser => `
                 <div class="fundraiser-card" data-id="${fundraiser.id}">
-                    <p>${fundraiser.image_path}</p>
                     <img src=".${fundraiser.image_path}" alt="${fundraiser.title}" class="fundraiser-image"
                     onerror="this.onerror=null;this.src='images/default-fundraiser.jpg'">
                     <div class="fundraiser-content">

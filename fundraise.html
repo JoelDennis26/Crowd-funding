@@ -193,7 +193,14 @@
         });
 
         document.getElementById('campaignForm').addEventListener('submit', async function(e) {
+            e.stopPropagation(); 
+            let isSubmitting = false;
+            if (isSubmitting) return;
+            isSubmitting = true;
             e.preventDefault();
+            const requestId = Date.now();
+            if (requestId <= lastRequestId) return;
+            lastRequestId = requestId;
             
             const submitBtn = document.getElementById('submitBtn');
             const formMessage = document.getElementById('formMessage');
