@@ -136,8 +136,6 @@ function verifyToken(req, res, next) {
     });
 }
 
-
-
 app.post('/donate', verifyToken, (req, res) => {
     const { fundraiserId, amount ,name, email} = req.body;
     const donor_id = req.user.userId;
