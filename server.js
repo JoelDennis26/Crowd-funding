@@ -103,7 +103,7 @@ app.post('/create-fundraiser', verifyToken, upload.single('image'), (req, res) =
     db.query('INSERT INTO fundraisers SET ?', fundraiser, (err, result) => {
         if (err) {
             if (err.code === 'ER_DUP_ENTRY') {
-                return res.status(409).json({ message: 'Duplicate fundraiser' });
+                // return res.status(409).json({ message: 'Duplicate fundraiser' });
             }
             console.error('DB insert error:', err);
             return res.status(500).json({ message: 'Server error' });
