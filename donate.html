@@ -141,11 +141,9 @@
 
             fundraisersContainer.innerHTML = fundraisers.map(fundraiser => `
                 <div class="fundraiser-card" data-id="${fundraiser.id}">
-                    <img src="${fundraiser.image_path}"
-                        alt="${fundraiser.title}" 
-                        class="fundraiser-image"
-                        onerror="this.onerror=null;this.src='images/default-fundraiser.jpg'">
-
+                    <p>${fundraiser.image_path}</p>
+                    <img src=".${fundraiser.image_path}" alt="${fundraiser.title}" class="fundraiser-image"
+                    onerror="this.onerror=null;this.src='images/default-fundraiser.jpg'">
                     <div class="fundraiser-content">
                         <h3>${fundraiser.title}</h3>
                         <p class="description">${fundraiser.description.substring(0, 120)}${fundraiser.description.length > 120 ? '...' : ''}</p>
