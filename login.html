@@ -8,7 +8,6 @@
   <link rel="stylesheet" href="styles.css" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
-  <!-- <script src="script.js"></script> -->
 </head>
 <body>
   <header>
@@ -40,7 +39,6 @@
       </div>
     </div>
   </div>
-  <!-- <script src="script.js"></script> -->
   <script>
     document.getElementById("loginform").addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -58,14 +56,12 @@
           const data = await response.json();
     
           if (response.ok && data.token) {
-            // Save the JWT token in localStorage
             localStorage.setItem("token", data.token);
     
-            // Save the user ID in localStorage
-            localStorage.setItem("user_id", data.user_id);  // Save user_id from the backend
+            localStorage.setItem("user_id", data.user_id);
     
             alert("Login successful!");
-            window.location.href = "index.html";  // Redirect to the home page or dashboard
+            window.location.href = "index.html";
           } else {
             alert(data.message || "Login failed. Please check your credentials.");
           }
@@ -89,5 +85,4 @@
     <p>&copy;2025 FundHive</p>
   </footer>
 </body>
-<!-- <script src="script.js"></script> -->
 </html>

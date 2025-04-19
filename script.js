@@ -18,8 +18,6 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     
-    // registration form
-
     if (document.getElementById('registerform')) {
         document.getElementById('registerform').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -47,7 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
-    // CHECK IF USER IS LOGGED IN
+
     function checkUserAuth() {
         const token = localStorage.getItem('token');
         const authLinks = document.getElementById('auth-links');
@@ -81,14 +79,12 @@ document.addEventListener("DOMContentLoaded", () => {
           const data = await response.json();
     
           if (response.ok && data.token) {
-            // Save the JWT token in localStorage
             localStorage.setItem("token", data.token);
     
-            // Save the user ID in localStorage
-            localStorage.setItem("user_id", data.user_id);  // Save user_id from the backend
+            localStorage.setItem("user_id", data.user_id);
     
             alert("Login successful!");
-            window.location.href = "index.html";  // Redirect to the home page or dashboard
+            window.location.href = "index.html";
           } else {
             alert(data.message || "Login failed. Please check your credentials.");
           }
@@ -98,7 +94,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // FUNDRAISE LOGIC
     const fundraiserList = document.getElementById("fundraiserList");
     if (fundraiserList) {
         fetch("/api/fundraisers")
@@ -126,7 +121,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-        // Check login status and update UI
         document.addEventListener('DOMContentLoaded', function() {
             const token = localStorage.getItem('token');
             const loginLink = document.getElementById('login-link');
@@ -143,11 +137,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 registerLink.style.display = 'none';
             }
             
-            // Set minimum date for end date field (today)
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('end_date').min = today;
             
-            // Image preview functionality
             document.getElementById('image').addEventListener('change', function(e) {
                 const file = e.target.files[0];
                 if (file) {
@@ -162,7 +154,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
 
-        // Form submission
         document.getElementById('campaignForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             

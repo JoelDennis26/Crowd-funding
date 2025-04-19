@@ -175,11 +175,9 @@
                 registerLink.style.display = 'none';
             }
             
-            // Set minimum date for end date field (today)
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('end_date').min = today;
             
-            // Image preview functionality
             document.getElementById('image').addEventListener('change', function(e) {
                 const file = e.target.files[0];
                 if (file) {
@@ -194,7 +192,6 @@
             });
         });
 
-        // Form submission
         document.getElementById('campaignForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -203,7 +200,6 @@
             submitBtn.disabled = true;
             formMessage.style.display = 'none';
             
-            // Basic form validation
             const title = document.getElementById('title').value.trim();
             const description = document.getElementById('description').value.trim();
             const goal = document.getElementById('goal').value;

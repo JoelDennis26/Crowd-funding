@@ -14,13 +14,13 @@ app.use(express.static('uploads'));
 
 // Body parsers
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true })); // Added to parse form-urlencoded data
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 
 const db = mysql.createConnection({
     host: 'localhost',
-    user: 'root',  // Change if needed
-    password: 'web@203E',  // Change if needed
+    user: 'root',
+    password: 'web@203E', 
     database: 'crowd_funding'
 });
 
@@ -32,14 +32,12 @@ db.connect(err => {
     }
 });
 
-// Multer Config
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, 'uploads/'),
     filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
 });
 const upload = multer({ storage });
 
-// REGISTER USER
 app.post('/register', async (req, res) => {
     const { username, email, password } = req.body;
 
@@ -60,7 +58,6 @@ app.post('/register', async (req, res) => {
     });
 });
 
-// LOGIN USER
 app.post('/login', (req, res) => {
     const { email, password } = req.body;
 
@@ -86,36 +83,6 @@ app.post('/login', (req, res) => {
     });
 });
 
-// app.post('/create-fundraiser', verifyToken,upload.single('image'), (req, res) => {
-//     const { userId } = req.user;  // User ID is decoded from JWT
-//     const { title, description, goal, category } = req.body;
-
-//     const image_path = req.file ? req.file.path.replace(/\\/g, '/') : null;
-
-//     console.log("user - id ",userId);
-//     console.log("req body ",req.body);
-//     console.log("req file ",req.file);
-//     //print file path
-//     console.log("file path ",req.file.path);
-//     // Process and create the fundraiser
-//     db.query(
-//         'INSERT INTO fundraisers (user_id, title, description, goal, category, image_path) VALUES (?, ?, ?, ?, ?, ?)',
-//         [userId, title, description, goal, category, image_path],
-//         (err, results) => {
-//             if (err) {
-//                 console.error("❌ SQL ERROR:", err);
-//                 return res.status(500).json({ message: 'Database error' });
-//             }
-
-            
-//             res.json({ 
-//                 message: 'Fundraiser created successfully' ,
-//                 image_path: req.file.path, // Send the image path back to the client
-//             });
-//         }
-//     );
-// });
-
 app.post('/create-fundraiser', verifyToken, upload.single('image'), (req, res) => {
     const { title, description, goal, category, end_date } = req.body;
     const { userId } = req.user;
@@ -135,9 +102,9 @@ app.post('/create-fundraiser', verifyToken, upload.single('image'), (req, res) =
 
     db.query('INSERT INTO fundraisers SET ?', fundraiser, (err, result) => {
         if (err) {
-            // if (err.code === 'ER_DUP_ENTRY') {
-            //     return res.status(409).json({ message: 'Duplicate fundraiser' });
-            // }
+            if (err.code === 'ER_DUP_ENTRY') {
+                return res.status(409).json({ message: 'Duplicate fundraiser' });
+            }
             console.error('DB insert error:', err);
             return res.status(500).json({ message: 'Server error' });
         }
@@ -148,7 +115,7 @@ app.post('/create-fundraiser', verifyToken, upload.single('image'), (req, res) =
 
 
 function verifyToken(req, res, next) {
-    const token = req.headers['authorization']?.split(' ')[1];  // Get token from header
+    const token = req.headers['authorization']?.split(' ')[1];
 
     console.log("Token recieved: "+token);
 
@@ -161,9 +128,8 @@ function verifyToken(req, res, next) {
             return res.status(403).json({ message: 'Invalid token' });
         }
 
-        // Attach decoded user info to the request
         req.user = {
-            userId: decoded.userId  // Make sure this matches what you put in the token
+            userId: decoded.userId
         };
         next();
     });
@@ -173,17 +139,15 @@ function verifyToken(req, res, next) {
 
 app.post('/donate', verifyToken, (req, res) => {
     const { fundraiserId, amount ,name, email} = req.body;
-    const donor_id = req.user.userId; // From authenticateToken middleware
+    const donor_id = req.user.userId;
 
     console.log(donor_id);
 
-    // print fundraiserid and amount
     console.log(fundraiserId+" "+amount)
     if (!fundraiserId || !amount || amount <= 0) {
         return res.status(400).json({ message: 'Invalid donation request.' });
     }
 
-    // First, fetch the fundraiser to validate existence and ownership
     const fundraiserQuery = 'SELECT * FROM Fundraisers WHERE id = ? AND status = "active"';
 
     db.query(fundraiserQuery, [fundraiserId], (err, results) => {
@@ -198,12 +162,10 @@ app.post('/donate', verifyToken, (req, res) => {
 
         const fundraiser = results[0];
 
-        // Prevent self-donation
         if (fundraiser.user_id === donor_id) {
             return res.status(403).json({ message: 'You cannot donate to your own fundraiser.' });
         }
 
-        // Proceed to insert donation and update raised amount
         const insertDonation = 'INSERT INTO Donations (user_id, fundraiser_id, amount, name, email) VALUES (?, ?, ?, ? , ?)';
         const updateFundraiser = 'UPDATE Fundraisers SET raised = raised + ? WHERE id = ?';
 
@@ -225,7 +187,6 @@ app.post('/donate', verifyToken, (req, res) => {
     });
 });
 
-// GET all fundraisers
 app.get('/fundraisers', (req, res) => {
     console.log("Fetching fundraisers from DB...");
     db.query('SELECT * FROM Fundraisers', (err, results) => {
@@ -238,7 +199,6 @@ app.get('/fundraisers', (req, res) => {
     });
 });
 
-// GET single fundraiser
 app.get('/fundraisers/:id', (req, res) => {
     const { id } = req.params;
     db.query('SELECT * FROM Fundraisers WHERE id = ?', [id], (err, results) => {
@@ -254,7 +214,7 @@ app.get('/fundraisers/:id', (req, res) => {
 });
 
 app.get('/donations', (req, res) => {
-    const limit = parseInt(req.query.limit) || 10; // Default to 10 if no limit specified
+    const limit = parseInt(req.query.limit) || 10;
     
     const query = `
         SELECT 
@@ -281,7 +241,6 @@ app.get('/donations', (req, res) => {
 });
 
 
-// START SERVER
 app.listen(3000, () => {
     console.log('Server running on port 3000');
 });
