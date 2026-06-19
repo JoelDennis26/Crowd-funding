@@ -1,6 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const mysql = require('mysql');
+const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
@@ -11,8 +11,13 @@ const crypto = require('crypto');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { sendVerificationEmail } = require('./services/emailService');
-const authRouter = require('./routes/auth');
 
+// Models
+const User = require('./models/User');
+const Campaign = require('./models/Campaign');
+const Donation = require('./models/Donation');
+
+const authRouter = require('./routes/auth');
 const createAdminRouter = require('./routes/admin');
 const paymentsRouter = require('./routes/payments');
 const milestonesRouter = require('./routes/milestones');
@@ -24,40 +29,21 @@ app.use(express.static('uploads'));
 
 // Rate Limiting
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
+    windowMs: 15 * 60 * 1000,
+    max: 100,
     message: 'Too many requests from this IP, please try again after 15 minutes'
 });
 app.use(limiter);
 
-
-
 app.use('/images', express.static(path.join(__dirname, 'images')));
-
-// Body parsers
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 
-const db = mysql.createPool({
-    connectionLimit: 10,
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASS || '', 
-    database: process.env.DB_NAME || 'crowd_funding'
-});
-
-db.getConnection((err, connection) => {
-    if (err) {
-        console.error('Database connection failed:', err);
-    } else {
-        console.log('Connected to MySQL via Connection Pool');
-        connection.release();
-    }
-});
-
-// Make db accessible to route modules via req.app.get('db')
-app.set('db', db);
+// MongoDB Connection
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('Connected to MongoDB Atlas'))
+  .catch(err => console.error('MongoDB connection failed:', err));
 
 // Mount auth routes (email verification endpoints)
 app.use(authRouter);
@@ -75,207 +61,188 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 app.post('/register', async (req, res) => {
-    const { username, email, password } = req.body;
+    try {
+        const { username, email, password } = req.body;
 
-    if (!username || !email || !password) {
-        return res.status(400).json({ message: 'All fields are required' });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    db.query('INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)', 
-    [username, email, hashedPassword], 
-    (err, result) => {
-        if (err) {
-            console.error('Error registering user:', err);
-            return res.status(500).json({ message: 'Error registering user' });
+        if (!username || !email || !password) {
+            return res.status(400).json({ message: 'All fields are required' });
         }
 
-        const userId = result.insertId;
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(409).json({ message: 'Email already in use' });
+        }
 
-        // Requirement 1.1 — generate a unique 64-char hex token with 24-hour expiry
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
         const token = crypto.randomBytes(32).toString('hex');
-        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000)
-            .toISOString()
-            .slice(0, 19)
-            .replace('T', ' ');
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-        db.query(
-            'INSERT INTO email_verifications (user_id, token, expires_at) VALUES (?, ?, ?)',
-            [userId, token, expiresAt],
-            (tokenErr) => {
-                if (tokenErr) {
-                    console.error('[register] Failed to insert verification token:', tokenErr);
-                    // User is created but token failed — still return success so the user
-                    // can use resend-verification to get a new token.
-                }
+        const newUser = new User({
+            username,
+            email,
+            password_hash: hashedPassword,
+            verification_token: token,
+            verification_token_expires: expiresAt
+        });
 
-                // Fire-and-forget: send verification email
-                sendVerificationEmail({ email, username }, token);
+        await newUser.save();
 
-                res.status(201).json({
-                    message: 'User registered successfully. Please check your email to verify your account.',
-                });
-            }
-        );
-    });
+        sendVerificationEmail({ email, username }, token);
+
+        res.status(201).json({
+            message: 'User registered successfully. Please check your email to verify your account.',
+        });
+    } catch (err) {
+        console.error('Error registering user:', err);
+        res.status(500).json({ message: 'Error registering user' });
+    }
 });
 
-app.post('/login', (req, res) => {
-    const { email, password } = req.body;
+app.post('/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
 
-    db.query('SELECT * FROM users WHERE email = ?', [email], async (err, results) => {
-        if (err || results.length === 0) {
+        const user = await User.findOne({ email });
+        if (!user) {
             return res.status(401).json({ message: 'Invalid email or password' });
         }
 
-        const hashedPassword = results[0].password_hash;
-
-        if(!hashedPassword){
-            return res.status(500).json({ message: 'Password not found in database' });
+        const isMatch = await bcrypt.compare(password, user.password_hash);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Invalid email or password' });
         }
 
-        bcrypt.compare(password, hashedPassword, (err, isMatch) => {
-            if (err || !isMatch) {
-                return res.status(401).json({ message: 'Invalid email or password' });
-            }
+        if (!user.is_verified) {
+            return res.status(401).json({
+                message: 'Please verify your email before logging in.',
+                resendAvailable: true
+            });
+        }
 
-            if (results[0].is_verified !== 1) {
-                return res.status(401).json({
-                    message: 'Please verify your email before logging in.',
-                    resendAvailable: true
-                });
-            }
-
-            const token = jwt.sign({ userId: results[0].id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-            res.json({ token, user_id: results[0].id, is_admin: results[0].is_admin });
-        });
-    });
-});
-
-app.post('/create-fundraiser', verifyToken, upload.single('image'), (req, res) => {
-    const { title, description, goal, category, end_date } = req.body;
-    const { userId } = req.user;
-
-    if (!title || !description || !goal || !category || !userId || !req.file) {
-        return res.status(400).json({ message: 'Missing required fields' });
+        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        res.json({ token, user_id: user._id, is_admin: user.is_admin });
+    } catch (err) {
+        console.error('Login error:', err);
+        res.status(500).json({ message: 'Internal server error' });
     }
-
-    const fundraiser = {
-        user_id: userId,
-        title,
-        description,
-        goal: parseFloat(goal),
-        category,
-        image_path: `/uploads/${req.file.filename}`,
-        verification_status: 'pending',
-        status: 'draft',
-    };
-
-    db.query('INSERT INTO fundraisers SET ?', fundraiser, (err, result) => {
-        if (err) {
-            if (err.code === 'ER_DUP_ENTRY') {
-                // return res.status(409).json({ message: 'Duplicate fundraiser' });
-                return res.status(201).json({ message: 'Fundraiser created successfully' });
-            }
-            console.error('DB insert error:', err);
-            return res.status(500).json({ message: 'Server error' });
-        }
-
-        return res.status(201).json({ message: 'Fundraiser created successfully' });
-    });
 });
 
+app.post('/create-fundraiser', verifyToken, upload.single('image'), async (req, res) => {
+    try {
+        const { title, description, goal, category } = req.body;
+        const { userId } = req.user;
 
-function verifyToken(req, res, next) {
+        if (!title || !description || !goal || !category || !userId || !req.file) {
+            return res.status(400).json({ message: 'Missing required fields' });
+        }
+
+        const campaign = new Campaign({
+            user_id: userId,
+            title,
+            description,
+            goal: parseFloat(goal),
+            category,
+            image_path: `/uploads/${req.file.filename}`,
+            status: 'draft' // or pending, keeping it draft to match prev logic
+        });
+
+        await campaign.save();
+        res.status(201).json({ message: 'Fundraiser created successfully' });
+    } catch (err) {
+        console.error('Create fundraiser error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+async function verifyToken(req, res, next) {
     const token = req.headers['authorization']?.split(' ')[1];
-
-    console.log("Token recieved: "+token);
 
     if (!token) {
         return res.status(403).json({ message: 'Token is required' });
     }
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-        if (err) {
-            return res.status(403).json({ message: 'Invalid token' });
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findById(decoded.userId);
+        
+        if (!user) {
+            req.user = { userId: decoded.userId, is_admin: false };
+        } else {
+            req.user = { userId: decoded.userId, is_admin: user.is_admin };
         }
-
-        // Fetch is_admin from the database so admin middleware can rely on it
-        db.query('SELECT is_admin FROM users WHERE id = ?', [decoded.userId], (dbErr, rows) => {
-            if (dbErr || rows.length === 0) {
-                req.user = { userId: decoded.userId, is_admin: 0 };
-            } else {
-                req.user = { userId: decoded.userId, is_admin: rows[0].is_admin };
-            }
-            next();
-        });
-    });
+        next();
+    } catch (err) {
+        return res.status(403).json({ message: 'Invalid token' });
+    }
 }
 
-// Mount admin routes (requires verifyToken + isAdmin)
-app.use('/api/admin', createAdminRouter(db, verifyToken));
+// Mount admin routes (requires verifyToken)
+app.use('/api/admin', createAdminRouter(verifyToken));
 
 // Mount milestones router
 app.use(milestonesRouter);
 
-// Mount payment routes — inject db connection via req.db
-app.use('/api/payments', (req, _res, next) => { req.db = db; next(); }, paymentsRouter);
+// Mount payment routes
+app.use('/api/payments', paymentsRouter);
 
-
-app.get('/fundraisers', (req, res) => {
-    console.log("Fetching fundraisers from DB...");
-    db.query('SELECT * FROM Fundraisers', (err, results) => {
-        if (err) {
-            console.error("Database error:", err);
-            return res.status(500).json({ error: err.message });
-        }
-        console.log(`Found ${results.length} fundraisers`);
-        res.json(results);
-    });
+app.get('/fundraisers', async (req, res) => {
+    try {
+        const campaigns = await Campaign.find({});
+        res.json(campaigns);
+    } catch (err) {
+        console.error("Database error:", err);
+        res.status(500).json({ error: err.message });
+    }
 });
 
-app.get('/fundraisers/:id', (req, res) => {
-    const { id } = req.params;
-    db.query('SELECT * FROM Fundraisers WHERE id = ?', [id], (err, results) => {
-        if (err) {
-            console.error('Error fetching fundraiser:', err);
-            return res.status(500).json({ message: 'Error fetching fundraiser' });
-        }
-        if (results.length === 0) {
+app.get('/api/fundraisers/my', verifyToken, async (req, res) => {
+    try {
+        const campaigns = await Campaign.find({ user_id: req.user.userId });
+        res.json(campaigns);
+    } catch (err) {
+        console.error("Database error:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/fundraisers/:id', async (req, res) => {
+    try {
+        const campaign = await Campaign.findById(req.params.id);
+        if (!campaign) {
             return res.status(404).json({ message: 'Fundraiser not found' });
         }
-        res.json(results[0]);
-    });
+        res.json(campaign);
+    } catch (err) {
+        console.error('Error fetching fundraiser:', err);
+        res.status(500).json({ message: 'Error fetching fundraiser' });
+    }
 });
 
-app.get('/donations', (req, res) => {
-    const limit = parseInt(req.query.limit) || 10;
-    
-    const query = `
-        SELECT 
-            d.id, 
-            d.amount, 
-            d.created_at,
-            d.name,
-            f.title AS fundraiser_title
-        FROM Donations d
-        LEFT JOIN Fundraisers f ON d.fundraiser_id = f.id
-        ORDER BY d.created_at DESC
-        LIMIT ?
-    `;
+app.get('/donations', async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 10;
+        const donations = await Donation.find({})
+            .populate('campaign_id', 'title') // fetch fundraiser title
+            .sort({ created_at: -1 })
+            .limit(limit);
 
-    console.log(query);
-    
-    db.query(query, [limit], (err, results) => {
-        if (err) {
-            console.error("Database error:", err);
-            return res.status(500).json({ error: err.message });
-        }
-        res.json(results);
-    });
+        // Format for backward compatibility with frontend:
+        const formatted = donations.map(d => ({
+            id: d._id,
+            amount: d.amount,
+            created_at: d.created_at,
+            name: d.name,
+            message: d.message,
+            fundraiser_title: d.campaign_id ? d.campaign_id.title : null
+        }));
+        
+        res.json(formatted);
+    } catch (err) {
+        console.error("Database error:", err);
+        res.status(500).json({ error: err.message });
+    }
 });
-
 
 // Centralized Error Handling Middleware
 app.use((err, req, res, next) => {
