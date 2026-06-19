@@ -7,30 +7,66 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const multer = require('multer');
 const path = require('path');
+const crypto = require('crypto');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const { sendVerificationEmail } = require('./services/emailService');
+const authRouter = require('./routes/auth');
+
+const createAdminRouter = require('./routes/admin');
+const paymentsRouter = require('./routes/payments');
+const milestonesRouter = require('./routes/milestones');
 
 const app = express();
+app.use(helmet());
 app.use(cors());
 app.use(express.static('uploads'));
+
+// Rate Limiting
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+    message: 'Too many requests from this IP, please try again after 15 minutes'
+});
+app.use(limiter);
+
+
+
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 // Body parsers
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 
-const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: 'web@203E', 
-    database: 'crowd_funding'
+const db = mysql.createPool({
+    connectionLimit: 10,
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASS || '', 
+    database: process.env.DB_NAME || 'crowd_funding'
 });
 
-db.connect(err => {
+db.getConnection((err, connection) => {
     if (err) {
         console.error('Database connection failed:', err);
     } else {
-        console.log('Connected to MySQL');
+        console.log('Connected to MySQL via Connection Pool');
+        connection.release();
     }
 });
+
+// Make db accessible to route modules via req.app.get('db')
+app.set('db', db);
+
+// Mount auth routes (email verification endpoints)
+app.use(authRouter);
+
+const fs = require('fs');
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir);
+}
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, 'uploads/'),
@@ -54,7 +90,34 @@ app.post('/register', async (req, res) => {
             console.error('Error registering user:', err);
             return res.status(500).json({ message: 'Error registering user' });
         }
-        res.status(201).json({ message: 'User registered successfully' });
+
+        const userId = result.insertId;
+
+        // Requirement 1.1 — generate a unique 64-char hex token with 24-hour expiry
+        const token = crypto.randomBytes(32).toString('hex');
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000)
+            .toISOString()
+            .slice(0, 19)
+            .replace('T', ' ');
+
+        db.query(
+            'INSERT INTO email_verifications (user_id, token, expires_at) VALUES (?, ?, ?)',
+            [userId, token, expiresAt],
+            (tokenErr) => {
+                if (tokenErr) {
+                    console.error('[register] Failed to insert verification token:', tokenErr);
+                    // User is created but token failed — still return success so the user
+                    // can use resend-verification to get a new token.
+                }
+
+                // Fire-and-forget: send verification email
+                sendVerificationEmail({ email, username }, token);
+
+                res.status(201).json({
+                    message: 'User registered successfully. Please check your email to verify your account.',
+                });
+            }
+        );
     });
 });
 
@@ -77,8 +140,15 @@ app.post('/login', (req, res) => {
                 return res.status(401).json({ message: 'Invalid email or password' });
             }
 
+            if (results[0].is_verified !== 1) {
+                return res.status(401).json({
+                    message: 'Please verify your email before logging in.',
+                    resendAvailable: true
+                });
+            }
+
             const token = jwt.sign({ userId: results[0].id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-            res.json({ token, user_id: results[0].id });
+            res.json({ token, user_id: results[0].id, is_admin: results[0].is_admin });
         });
     });
 });
@@ -98,6 +168,8 @@ app.post('/create-fundraiser', verifyToken, upload.single('image'), (req, res) =
         goal: parseFloat(goal),
         category,
         image_path: `/uploads/${req.file.filename}`,
+        verification_status: 'pending',
+        status: 'draft',
     };
 
     db.query('INSERT INTO fundraisers SET ?', fundraiser, (err, result) => {
@@ -129,62 +201,27 @@ function verifyToken(req, res, next) {
             return res.status(403).json({ message: 'Invalid token' });
         }
 
-        req.user = {
-            userId: decoded.userId
-        };
-        next();
+        // Fetch is_admin from the database so admin middleware can rely on it
+        db.query('SELECT is_admin FROM users WHERE id = ?', [decoded.userId], (dbErr, rows) => {
+            if (dbErr || rows.length === 0) {
+                req.user = { userId: decoded.userId, is_admin: 0 };
+            } else {
+                req.user = { userId: decoded.userId, is_admin: rows[0].is_admin };
+            }
+            next();
+        });
     });
 }
 
-app.post('/donate', verifyToken, (req, res) => {
-    const { fundraiserId, amount ,name, email} = req.body;
-    const donor_id = req.user.userId;
+// Mount admin routes (requires verifyToken + isAdmin)
+app.use('/api/admin', createAdminRouter(db, verifyToken));
 
-    console.log(donor_id);
+// Mount milestones router
+app.use(milestonesRouter);
 
-    console.log(fundraiserId+" "+amount)
-    if (!fundraiserId || !amount || amount <= 0) {
-        return res.status(400).json({ message: 'Invalid donation request.' });
-    }
+// Mount payment routes — inject db connection via req.db
+app.use('/api/payments', (req, _res, next) => { req.db = db; next(); }, paymentsRouter);
 
-    const fundraiserQuery = 'SELECT * FROM Fundraisers WHERE id = ? AND status = "active"';
-
-    db.query(fundraiserQuery, [fundraiserId], (err, results) => {
-        if (err) {
-            console.error('Error fetching fundraiser:', err);
-            return res.status(500).json({ message: 'Server error.' });
-        }
-
-        if (results.length === 0) {
-            return res.status(404).json({ message: 'Fundraiser not found or not active.' });
-        }
-
-        const fundraiser = results[0];
-
-        if (fundraiser.user_id === donor_id) {
-            return res.status(403).json({ message: 'You cannot donate to your own fundraiser.' });
-        }
-
-        const insertDonation = 'INSERT INTO Donations (user_id, fundraiser_id, amount, name, email) VALUES (?, ?, ?, ? , ?)';
-        const updateFundraiser = 'UPDATE Fundraisers SET raised = raised + ? WHERE id = ?';
-
-        db.query(insertDonation, [donor_id, fundraiserId, amount,name,email], (err) => {
-            if (err) {
-                console.error('Error inserting donation:', err);
-                return res.status(500).json({ message: 'Failed to record donation.' });
-            }
-
-            db.query(updateFundraiser, [amount, fundraiserId], (err) => {
-                if (err) {
-                    console.error('Error updating fundraiser amount:', err);
-                    return res.status(500).json({ message: 'Donation saved, but failed to update total.' });
-                }
-
-                res.json({ message: 'Donation successful.' });
-            });
-        });
-    });
-});
 
 app.get('/fundraisers', (req, res) => {
     console.log("Fetching fundraisers from DB...");
@@ -239,6 +276,15 @@ app.get('/donations', (req, res) => {
     });
 });
 
+
+// Centralized Error Handling Middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({
+        message: 'Internal Server Error',
+        error: process.env.NODE_ENV === 'development' ? err.message : {}
+    });
+});
 
 app.listen(3000, () => {
     console.log('Server running on port 3000');
