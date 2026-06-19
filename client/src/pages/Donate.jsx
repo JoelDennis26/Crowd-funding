@@ -23,10 +23,6 @@ function Donate() {
 
   useEffect(() => {
     fetchFundraisers();
-    const script = document.createElement('script');
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    script.async = true;
-    document.body.appendChild(script);
   }, []);
 
   const filtered = fundraisers.filter(f => {
@@ -91,6 +87,11 @@ function Donate() {
         },
         theme: { color: "#ffde59" }
       };
+
+      if (!window.Razorpay) {
+          alert("Payment gateway failed to load. Please disable your AdBlocker or try a different browser.");
+          return;
+      }
 
       const rzp1 = new window.Razorpay(options);
       rzp1.on('payment.failed', function (response){
