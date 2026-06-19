@@ -18,7 +18,7 @@ function AdminDashboard() {
       return;
     }
     try {
-      const res = await axios.get('http://localhost:3000/api/admin/campaigns/pending', {
+      const res = await axios.get('/api/admin/campaigns/pending', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCampaigns(res.data.campaigns);
@@ -37,7 +37,7 @@ function AdminDashboard() {
   const handleVerify = async (id, action, finalReason = null) => {
     const token = localStorage.getItem('token');
     try {
-      await axios.patch(`http://localhost:3000/api/admin/campaigns/${id}/verify`, {
+      await axios.patch(`/api/admin/campaigns/${id}/verify`, {
         action, reason: finalReason
       }, { headers: { Authorization: `Bearer ${token}` } });
       alert(`Campaign successfully ${action}d!`);

@@ -16,7 +16,7 @@ function Register() {
       return;
     }
     try {
-      const response = await axios.post('http://localhost:3000/register', { username, email, password });
+      const response = await axios.post('/register', { username, email, password });
       alert(response.data.message);
       if (response.status === 201) {
         navigate('/login');

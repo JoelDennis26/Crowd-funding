@@ -9,7 +9,7 @@ function Home() {
 
   const fetchDonations = async () => {
     try {
-      const res = await axios.get('http://localhost:3000/donations?limit=5');
+      const res = await axios.get('/donations?limit=5');
       setDonations(res.data);
       setError(false);
     } catch (err) {

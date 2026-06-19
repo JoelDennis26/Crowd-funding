@@ -12,7 +12,7 @@ function Donate() {
 
   const fetchFundraisers = async () => {
     try {
-      const res = await axios.get('http://localhost:3000/fundraisers');
+      const res = await axios.get('/fundraisers');
       setFundraisers(res.data);
     } catch (error) {
       console.error(error);
@@ -54,7 +54,7 @@ function Donate() {
     }
 
     try {
-      const { data: orderData } = await axios.post('http://localhost:3000/api/payments/create-order', {
+      const { data: orderData } = await axios.post('/api/payments/create-order', {
         amount: donationData.amount,
         campaignId: selectedFundraiser.id
       }, { headers: { Authorization: `Bearer ${token}` } });
@@ -68,7 +68,7 @@ function Donate() {
         order_id: orderData.order_id,
         handler: async function (response) {
           try {
-            const verifyRes = await axios.post('http://localhost:3000/api/payments/verify', {
+            const verifyRes = await axios.post('/api/payments/verify', {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
@@ -134,7 +134,7 @@ function Donate() {
                 <div className="no-fundraisers"><p>No fundraisers found matching your search.</p></div>
               ) : filtered.map(f => (
                 <div className="fundraiser-card" key={f.id}>
-                    <img src={`http://localhost:3000${f.image_path}`} alt={f.title} />
+                    <img src={`${f.image_path}`} alt={f.title} />
                     <div className="fundraiser-content">
                         <h3>{f.title}</h3>
                         <p className="description">{f.description}</p>

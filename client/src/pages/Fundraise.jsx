@@ -71,7 +71,7 @@ function Fundraise() {
     data.append('userId', userId);
 
     try {
-      const response = await fetch('http://localhost:3000/create-fundraiser', {
+      const response = await fetch('/create-fundraiser', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
