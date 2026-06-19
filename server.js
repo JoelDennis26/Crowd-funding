@@ -41,9 +41,20 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('Connected to MongoDB Atlas'))
-  .catch(err => console.error('MongoDB connection failed:', err));
+const connectWithRetry = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log('Connected to MongoDB Atlas');
+  } catch (err) {
+    console.error('MongoDB connection failed, retrying in 5s...', err.message);
+    setTimeout(connectWithRetry, 5000);
+  }
+};
+connectWithRetry();
+
+// Serve static React build
+app.use(express.static(path.join(__dirname, 'client', 'dist')));
+
 
 // Mount auth routes (email verification endpoints)
 app.use(authRouter);
@@ -251,6 +262,11 @@ app.use((err, req, res, next) => {
         message: 'Internal Server Error',
         error: process.env.NODE_ENV === 'development' ? err.message : {}
     });
+});
+
+// Fallback - for any route not handled by the API, serve index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'client', 'dist', 'index.html'));
 });
 
 app.listen(3000, () => {

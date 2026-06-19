@@ -14,7 +14,7 @@ function Dashboard() {
         return;
       }
       try {
-        const res = await axios.get('http://localhost:3000/api/fundraisers/my', {
+        const res = await axios.get('/api/fundraisers/my', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setCampaigns(res.data);
